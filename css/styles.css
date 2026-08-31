@@ -1,27 +1,27 @@
 @font-face {
   font-family: "IRANYekanX";
-  src: url("/fonts/IRANYekanX-Regular.woff2") format("woff2");
+  src: url("../fonts/IRANYekanX-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "IRANYekanX";
-  src: url("/fonts/IRANYekanX-Medium.woff2") format("woff2");
+  src: url("../fonts/IRANYekanX-Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "IRANYekanX";
-  src: url("/fonts/IRANYekanX-Bold.woff2") format("woff2");
+  src: url("../fonts/IRANYekanX-Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "IRANYekanX";
-  src: url("/fonts/IRANYekanX-ExtraBold.woff2") format("woff2");
+  src: url("../fonts/IRANYekanX-ExtraBold.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -345,7 +345,7 @@ section { padding: 52px 0; }
 .stats {
   background:
     linear-gradient(180deg, rgba(14,54,68,.82), rgba(14,54,68,.9)),
-    url("/images/clinic.webp") center / cover no-repeat;
+    url("../images/clinic.webp") center / cover no-repeat;
   color: #fff;
 }
 .stats h2 { color: #fff; text-align: center; }
@@ -708,7 +708,7 @@ section { padding: 52px 0; }
   .hero::before {
     background:
       linear-gradient(180deg, rgba(14, 54, 68, .28) 0%, rgba(14, 54, 68, .72) 55%, rgba(10, 36, 46, .92) 100%),
-      url("/images/clinic.webp") center / cover no-repeat;
+      url("../images/clinic.webp") center / cover no-repeat;
   }
   .hero-actions { grid-template-columns: max-content max-content; width: max-content; }
   .about-card, .fellowship-split {

@@ -6,10 +6,17 @@
   <title>انتقال به صفحه اصلی</title>
   <link rel="canonical" href="https://drnaderakbari.com/">
   <meta name="robots" content="noindex, follow">
-  <meta http-equiv="refresh" content="0; url=/">
-  <script>location.replace("/");</script>
+  <meta http-equiv="refresh" content="0; url=../">
+  <script>
+    (function () {
+      var repo = "dr-nader-akbari-website";
+      var first = location.pathname.split("/").filter(Boolean)[0];
+      var root = first === repo ? "/" + repo + "/" : "/";
+      location.replace(root);
+    })();
+  </script>
 </head>
 <body>
-  <p>این صفحه دیگر در دسترس نیست. در حال انتقال به <a href="/">صفحه اصلی</a>.</p>
+  <p>این صفحه دیگر در دسترس نیست. در حال انتقال به <a href="../">صفحه اصلی</a>.</p>
 </body>
 </html>

@@ -86,6 +86,16 @@ document.querySelectorAll("[data-wa]").forEach((el) => {
   el.setAttribute("href", WA);
 });
 
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a");
+  if (!a || typeof gtag !== "function") return;
+  const href = a.getAttribute("href") || "";
+  const where = a.closest(".dock") ? "dock" : a.closest(".site-header") ? "header" : a.closest(".site-footer") ? "footer" : "page";
+  if (a.hasAttribute("data-wa")) gtag("event", "whatsapp_click", { link_location: where });
+  else if (href.startsWith("tel:")) gtag("event", "phone_click", { link_location: where });
+  else if (a.classList.contains("map-link")) gtag("event", "map_click", { link_location: where });
+});
+
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const slides = document.querySelectorAll(".hero-slide");

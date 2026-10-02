@@ -18,6 +18,7 @@
   <link rel="icon" href="/images/favicon-32.png" sizes="32x32">
   <link rel="icon" href="/images/favicon-192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="preload" href="/images/hero-slide-1.webp" as="image" fetchpriority="high" media="(max-width: 767px)">
   <link rel="stylesheet" href="/css/styles.css">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@graph":[
@@ -64,7 +65,7 @@
   <main id="content">
     <section class="hero">
       <div class="hero-slides" aria-hidden="true">
-        <img class="hero-slide is-active" src="/images/hero-slide-1.webp" width="1024" height="681" alt="">
+        <img class="hero-slide is-active" src="/images/hero-slide-1.webp" width="1024" height="681" alt="" fetchpriority="high">
         <img class="hero-slide" src="/images/hero-slide-2.webp" width="1024" height="742" alt="" loading="lazy">
         <img class="hero-slide" src="/images/hero-slide-3.webp" width="1024" height="780" alt="" loading="lazy">
       </div>

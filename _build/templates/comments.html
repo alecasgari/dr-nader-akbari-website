@@ -1,0 +1,24 @@
+          <section class="comments" id="comments" aria-labelledby="comments-title" data-slug="{{slug}}" data-title="{{title}}" data-endpoint="{{endpoint}}" data-preview="{{preview}}">
+            <h2 id="comments-title">دیدگاه شما</h2>
+            <p class="comments-hint">تجربه یا سؤال خود را درباره این مطلب بنویسید. دیدگاه‌ها پس از بررسی نمایش داده می‌شوند. برای بررسی وضعیت شخصی خود، از واتساپ نوبت بگیرید.</p>
+            <div class="comment-list" data-comment-list></div>
+            <form class="comment-form" novalidate>
+              <label for="comment-name">نام</label>
+              <input id="comment-name" name="name" maxlength="60" autocomplete="name" required>
+              <label for="comment-text">دیدگاه</label>
+              <textarea id="comment-text" name="comment" maxlength="1500" required></textarea>
+              <div class="hp" aria-hidden="true"><label>وب‌سایت <input name="website" tabindex="-1" autocomplete="off"></label></div>
+              <button type="submit" class="btn btn-primary">ارسال دیدگاه</button>
+              <p class="review-status" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <dialog class="modal" id="comment-modal" aria-labelledby="comment-modal-title">
+            <div class="review-panel review-done">
+              <button type="button" class="modal-close" data-close-modal aria-label="بستن">×</button>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-6.5"/></svg>
+              <h2 id="comment-modal-title">ممنون، دیدگاه شما ثبت شد</h2>
+              <p>دیدگاه شما در دست بررسی است و پس از تأیید نمایش داده می‌شود.</p>
+              <button type="button" class="btn btn-primary" data-close-modal>باشه</button>
+            </div>
+          </dialog>

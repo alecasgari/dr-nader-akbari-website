@@ -9,6 +9,16 @@
   const status = form.querySelector(".review-status");
   const textarea = form.elements.comment;
   const buttons = [...form.querySelectorAll("[data-action]")];
+  const modal = document.getElementById("review-modal");
+
+  document.querySelectorAll("[data-open-review]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.openModal(modal);
+      if (!formStep.hidden) textarea.focus();
+    });
+  });
+  if (location.hash === "#review") window.openModal(modal);
 
   function showDone(action) {
     form.querySelector("[data-done-title]").textContent =
@@ -76,4 +86,5 @@
 
   buttons.forEach((b) => b.addEventListener("click", () => send(b.dataset.action)));
   form.addEventListener("submit", (e) => e.preventDefault());
+  modal.addEventListener("cancel", () => setStatus(""));
 })();

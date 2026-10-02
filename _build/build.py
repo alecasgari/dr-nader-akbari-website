@@ -19,6 +19,7 @@ from urllib.parse import quote
 import markdown
 import yaml
 from markdown.extensions.toc import slugify_unicode
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 BUILD = ROOT / "_build"
@@ -175,12 +176,29 @@ def load_pages():
 
 # ---------- rendering ----------
 
+def image_size(src):
+    with Image.open(ROOT / src.lstrip("/")) as im:
+        return im.size
+
+
+def size_images(body):
+    def fix(m):
+        tag = m.group(0)
+        src = re.search(r'src="(/[^"]+)"', tag)
+        if not src or " width=" in tag:
+            return tag
+        w, h = image_size(src.group(1))
+        return tag[:-1].rstrip(" /") + f' width="{w}" height="{h}" loading="lazy" decoding="async">'
+    body = re.sub(r"<img [^>]+>", fix, body)
+    return re.sub(r"<p>(<img [^>]+>)</p>", r'<figure>\1</figure>', body)
+
+
 def render_markdown(src):
     md = markdown.Markdown(
         extensions=["extra", "sane_lists", "toc"],
         extension_configs={"toc": {"slugify": slugify_unicode, "toc_depth": "2"}},
     )
-    body = md.convert(src)
+    body = size_images(md.convert(src))
     toc = [(t["id"], t["name"]) for t in md.toc_tokens]
     return body, toc
 
@@ -270,6 +288,16 @@ def render_page(p, pages, draft, hub_live, wa):
     if draft:
         review_panel = fill(tpl("review-panel.html"), endpoint=ENDPOINT,
                             slug=esc(p.slug), title=esc(p.title))
+    comments = fill(tpl("comments.html"), endpoint=ENDPOINT, slug=esc(p.slug),
+                    title=esc(p.title), preview="1" if draft else "0")
+
+    hero_image = ""
+    if g("image"):
+        w, h = image_size(g("image"))
+        hero_image = (f'          <figure class="article-figure">\n'
+                      f'            <img src="{esc(g("image"))}" width="{w}" height="{h}" '
+                      f'alt="{esc(g("image_alt", p.title))}" fetchpriority="high">\n'
+                      f'          </figure>')
 
     main = fill(
         tpl("article.html"),
@@ -289,16 +317,19 @@ def render_page(p, pages, draft, hub_live, wa):
         cta_title=esc(g("cta", "برای بررسی وضعیت خود نوبت بگیرید")),
         review_panel=review_panel,
         related=related,
+        comments=comments,
+        hero_image=hero_image,
     )
 
     page_title = g("seo_title") or f"{p.title} | {DOCTOR}"
-    image = g("image") or DEFAULT_IMAGE
+    image = SITE + (g("og_image") or g("image")) if (g("og_image") or g("image")) else DEFAULT_IMAGE
+    scripts = '  <script src="/js/article.js"></script>'
     if draft:
         head = '  <meta name="robots" content="noindex, nofollow, noarchive">'
         schema, analytics = "", ""
         banner = ('  <div class="draft-banner">پیش‌نویس، هنوز منتشر نشده | '
-                  '<a href="#review">رفتن به بخش تأیید</a></div>')
-        scripts = '  <script src="/js/review.js"></script>'
+                  '<a href="#review" data-open-review>ثبت تأیید یا نظر دکتر</a></div>')
+        scripts += '\n  <script src="/js/review.js"></script>'
     else:
         url = abs_url(p.path)
         head = "\n".join([
@@ -338,7 +369,7 @@ def render_page(p, pages, draft, hub_live, wa):
             graph.append(faq_ld)
         schema = json_ld({"@context": "https://schema.org", "@graph": graph})
         analytics = ANALYTICS
-        banner, scripts = "", ""
+        banner = ""
 
     return layout(page_title, p.description, head, schema, analytics, main, banner, scripts,
                   hub_live, wa, "is-draft" if draft else "is-article")

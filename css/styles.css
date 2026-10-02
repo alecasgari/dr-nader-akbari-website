@@ -239,7 +239,7 @@ ul { margin: 0; padding: 0; list-style: none; }
   border: 1px solid var(--line);
 }
 .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
-.btn-whatsapp { background: #128c7e; color: #fff; }
+.btn-whatsapp { background: #0f7d71; color: #fff; }
 .btn-block { width: 100%; }
 
 /* Sections */
@@ -480,6 +480,7 @@ section { padding: 52px 0; }
   margin-bottom: 0;
 }
 .site-footer h2, .site-footer h3 { color: #fff; }
+.site-footer .footer-title { font-size: 1.17em; }
 .site-footer a { color: #cfe8ef; }
 .footer-grid { display: grid; gap: 28px; }
 .contact-list { display: grid; gap: 10px; }
@@ -554,7 +555,7 @@ section { padding: 52px 0; }
 .dock-map { color: var(--teal-dark); }
 .dock-tel { color: var(--teal-dark); }
 .dock .is-accent {
-  background: #128c7e;
+  background: #0f7d71;
   color: #fff;
 }
 .dock .is-accent svg { width: 18px; height: 18px; }

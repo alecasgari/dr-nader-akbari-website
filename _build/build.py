@@ -220,6 +220,10 @@ def render_page(p, pages, draft, hub_live, wa):
         raise SystemExit(f"{p.file.name}: {len(asks)} open doctor questions; resolve [[...]] before publishing")
     body, toc = render_markdown(p.source)
     body = re.sub(r"\[\[(.+?)\]\]", lambda m: f'<mark class="ask"><b>پرسش از دکتر:</b> {m.group(1)}</mark>', body)
+    if draft:
+        for x in pages:
+            if not x.live:
+                body = body.replace(f'href="{x.path}"', f'href="{x.draft_path}"')
     pillar = by_slug.get(p.pillar)
     g = p.meta.get
 
@@ -483,7 +487,7 @@ def build():
     wa = wa_path()
     hub_live = any(p.live for p in pages)
     outputs = {}
-    known = {"/", f"/{HUB_DIR}/"} | {p.path for p in pages if p.live}
+    known = {"/", f"/{HUB_DIR}/"} | {p.path for p in pages if p.live} | {p.draft_path for p in pages if not p.live}
 
     for p in pages:
         if p.live:

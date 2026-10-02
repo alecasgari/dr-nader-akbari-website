@@ -7,6 +7,13 @@
   <meta name="robots" content="noindex">
   <link rel="icon" href="/images/favicon-32.png" sizes="32x32">
   <link rel="stylesheet" href="/css/styles.css">
+  <script>
+    (function () {
+      var p = decodeURIComponent(location.pathname);
+      if (p.indexOf("خونریزی") !== -1) location.replace("/#nosebleed");
+      else if (p.indexOf("/wp-content/") === 0) location.replace("/");
+    })();
+  </script>
   <!-- analytics -->
   <!-- Google tag GT-TNF2V7K + GA4 G-T3P18C5N3Q (stream 5212067106) and Google Tag Manager GTM-N5FRJM47. GA4 is sent from here, so it must not also be added as a tag inside GTM. -->
   <script>

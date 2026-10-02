@@ -329,7 +329,19 @@ def render_page(p, pages, draft, hub_live, wa):
     image = SITE + (g("og_image") or g("image")) if (g("og_image") or g("image")) else DEFAULT_IMAGE
     scripts = '  <script src="/js/article.js"></script>'
     if draft:
-        head = '  <meta name="robots" content="noindex, nofollow, noarchive">'
+        head = "\n".join([
+            '  <meta name="robots" content="noindex, nofollow, noarchive">',
+            '  <meta property="og:locale" content="fa_IR">',
+            '  <meta property="og:type" content="article">',
+            '  <meta property="og:site_name" content="دکتر نادر اکبری">',
+            f'  <meta property="og:title" content="{esc(p.title)}">',
+            f'  <meta property="og:description" content="{esc(p.description)}">',
+            f'  <meta property="og:url" content="{abs_url(p.draft_path)}">',
+            f'  <meta property="og:image" content="{esc(image)}">',
+            '  <meta property="og:image:width" content="1200">',
+            '  <meta property="og:image:height" content="630">',
+            '  <meta name="twitter:card" content="summary_large_image">',
+        ])
         schema, analytics = "", ""
         banner = ('  <div class="draft-banner">پیش‌نویس، هنوز منتشر نشده | '
                   '<a href="#review" data-open-review>ثبت تأیید یا نظر دکتر</a></div>')
@@ -346,6 +358,8 @@ def render_page(p, pages, draft, hub_live, wa):
             f'  <meta property="og:description" content="{esc(p.description)}">',
             f'  <meta property="og:url" content="{url}">',
             f'  <meta property="og:image" content="{esc(image)}">',
+            '  <meta property="og:image:width" content="1200">',
+            '  <meta property="og:image:height" content="630">',
             f'  <meta property="article:published_time" content="{pub.isoformat()}">',
             f'  <meta property="article:modified_time" content="{upd.isoformat()}">',
             '  <meta name="twitter:card" content="summary_large_image">',

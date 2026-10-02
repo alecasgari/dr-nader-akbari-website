@@ -1020,3 +1020,5 @@ section { padding: 52px 0; }
 @media (min-width: 768px) {
   .comment-form .btn { justify-self: start; min-width: 180px; }
 }
+.prose mark.ask { background: #fff3c4; color: #6b4b00; border: 1px dashed #d9a400; border-radius: 6px; padding: 1px 6px; font-size: .92em; }
+.prose mark.ask b { font-weight: 800; }

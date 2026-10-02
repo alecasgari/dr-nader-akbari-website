@@ -215,7 +215,11 @@ def card(p):
 
 def render_page(p, pages, draft, hub_live, wa):
     by_slug = {x.slug: x for x in pages}
+    asks = re.findall(r"\[\[(.+?)\]\]", p.source)
+    if asks and not draft:
+        raise SystemExit(f"{p.file.name}: {len(asks)} open doctor questions; resolve [[...]] before publishing")
     body, toc = render_markdown(p.source)
+    body = re.sub(r"\[\[(.+?)\]\]", lambda m: f'<mark class="ask"><b>پرسش از دکتر:</b> {m.group(1)}</mark>', body)
     pillar = by_slug.get(p.pillar)
     g = p.meta.get
 

@@ -1,0 +1,56 @@
+    <section class="page-hero article-hero">
+      <div class="wrap">
+        <nav class="breadcrumb" aria-label="مسیر صفحه">
+          <ol>
+{{breadcrumb}}
+          </ol>
+        </nav>
+        <p class="kicker">{{kicker}}</p>
+        <h1>{{h1}}</h1>
+        <p class="lead">{{lead}}</p>
+        <div class="article-meta">
+          <span>بازبینی علمی: <strong>دکتر نادر اکبری دیلمقانی</strong></span>
+          <span>{{dates}}</span>
+          <span>زمان مطالعه: {{read_time}} دقیقه</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="article-section">
+      <div class="wrap article-layout">
+        <aside class="article-aside">
+          <details class="toc">
+            <summary>فهرست مطالب</summary>
+            <ol>
+{{toc}}
+            </ol>
+          </details>
+        </aside>
+
+        <article class="article-main">
+{{summary}}
+          <div class="prose">
+{{body}}
+          </div>
+{{children}}
+{{faq}}
+          <div class="review-box">
+            <img src="/images/portrait.webp" width="72" height="72" alt="دکتر نادر اکبری دیلمقانی" loading="lazy">
+            <div>
+              <p class="name">دکتر نادر اکبری دیلمقانی</p>
+              <p>دانشیار و فلوشیپ راینولوژی و جراحی قاعده جمجمه. {{reviewed}} <a href="/#about">درباره دکتر</a></p>
+            </div>
+          </div>
+
+          <div class="cta-box">
+            <h2>{{cta_title}}</h2>
+            <p>برای معاینه و بررسی دقیق، از طریق واتساپ یا تلفن نوبت بگیرید.</p>
+            <a class="btn btn-whatsapp" data-wa target="_blank" rel="noopener">رزرو نوبت در واتساپ</a>
+            <a class="btn btn-outline" href="tel:09054092053">تماس با مطب</a>
+          </div>
+{{review_panel}}
+{{related}}
+          <p class="disclaimer">این مطلب برای آگاهی عمومی است و جایگزین معاینه و تشخیص پزشک نیست. برای تصمیم درباره درمان، حتماً با پزشک مشورت کنید.</p>
+        </article>
+      </div>
+    </section>

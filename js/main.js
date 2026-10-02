@@ -86,6 +86,14 @@ document.querySelectorAll("[data-wa]").forEach((el) => {
   el.setAttribute("href", WA);
 });
 
+document.querySelectorAll(".toc").forEach((toc) => {
+  const wide = matchMedia("(min-width: 1024px)");
+  toc.open = wide.matches;
+  toc.addEventListener("click", (e) => {
+    if (e.target.closest("a") && !wide.matches) toc.open = false;
+  });
+});
+
 document.addEventListener("click", (e) => {
   const a = e.target.closest("a");
   if (!a || typeof gtag !== "function") return;

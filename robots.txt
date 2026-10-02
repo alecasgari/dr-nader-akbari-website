@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /proposal/
+Disallow: /_build/
+Disallow: /_content/
 
 Sitemap: https://drnaderakbari.com/sitemap.xml

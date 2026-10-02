@@ -1,0 +1,20 @@
+          <form class="review-panel" id="review" data-endpoint="{{endpoint}}" data-slug="{{slug}}" data-title="{{title}}" novalidate>
+            <div data-step="form">
+              <h2>نظر شما درباره این پیش‌نویس</h2>
+              <p>اگر متن از نظر علمی درست است، «تأیید می‌کنم» را بزنید. اگر جایی باید اصلاح شود، توضیح دهید و «ارسال نظر» را بزنید. نوشتن توضیح هنگام تأیید اختیاری است.</p>
+              <label for="review-comment" class="kicker">توضیح یا اصلاحیه</label>
+              <textarea id="review-comment" name="comment" maxlength="3000" placeholder="مثلاً: در بخش دوم، مدت استفاده از اسپری را دو هفته بنویسید."></textarea>
+              <div class="hp" aria-hidden="true"><label>وب‌سایت <input name="website" tabindex="-1" autocomplete="off"></label></div>
+              <div class="review-actions">
+                <button type="button" class="btn btn-primary" data-action="approve">تأیید می‌کنم</button>
+                <button type="button" class="btn btn-outline" data-action="comment">ارسال نظر</button>
+              </div>
+              <p class="review-status" role="status" aria-live="polite"></p>
+            </div>
+            <div class="review-done" data-step="done" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-6.5"/></svg>
+              <h2 data-done-title>ممنون، پاسخ شما ثبت شد</h2>
+              <p data-done-text>پاسخ شما به الک عسگری رسید.</p>
+              <button type="button" class="btn btn-outline" data-again>ارسال نظر دیگر</button>
+            </div>
+          </form>

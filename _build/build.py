@@ -114,9 +114,40 @@ def tpl(name):
     return (TEMPLATES / name).read_text(encoding="utf-8")
 
 
-def wa_path():
-    src = (ROOT / "دستورالعمل" / "index.html").read_text(encoding="utf-8")
-    return re.search(r'class="wa-ico"[^>]*><path d="([^"]+)"', src).group(1)
+WA_PATH = ("M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"
+           "m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884"
+           "m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z")
+
+# Hand-written pages whose header/footer are filled in from the shared templates.
+STATIC_CHROME = {"index.html": "/", "دستورالعمل/index.html": "/دستورالعمل/"}
+
+
+def site_chrome(current, hub_live):
+    nav = tpl("nav.html").replace("\r\n", "\n").rstrip("\n")
+    if not hub_live:
+        nav = "\n".join(l for l in nav.split("\n") if f'href="/{HUB_DIR}/"' not in l)
+    nav = nav.replace(f'<a href="{current}">', f'<a href="{current}" aria-current="page">')
+    header = fill(tpl("header.html"), nav=nav, wa_path=WA_PATH).replace("\r\n", "\n")
+    footer = fill(tpl("footer.html"), nav=nav, wa_path=WA_PATH).replace("\r\n", "\n")
+    return header, footer
+
+
+def apply_static_chrome(hub_live):
+    for rel, current in STATIC_CHROME.items():
+        f = ROOT / rel
+        raw = f.read_bytes().decode("utf-8")
+        eol = "\r\n" if "\r\n" in raw else "\n"
+        text = raw.replace("\r\n", "\n")
+        header, footer = site_chrome(current, hub_live)
+        for name, block in (("site-header", header), ("site-footer", footer)):
+            pat = re.compile(rf"(  <!-- {name} -->\n).*?(  <!-- /{name} -->\n)", re.S)
+            if not pat.search(text):
+                raise SystemExit(f"{rel}: missing <!-- {name} --> markers")
+            text = pat.sub(lambda m: m.group(1) + block + m.group(2), text, count=1)
+        out = text.replace("\n", eol)
+        if out != raw:
+            f.write_bytes(out.encode("utf-8"))
+            print(f"  updated header/footer in {rel}")
 
 
 def json_ld(data):
@@ -213,7 +244,7 @@ def card(p):
             f'<span>{esc(p.description)}</span></a>')
 
 
-def render_page(p, pages, draft, hub_live, wa):
+def render_page(p, pages, draft, hub_live):
     by_slug = {x.slug: x for x in pages}
     asks = re.findall(r"\[\[(.+?)\]\]", p.source)
     if asks and not draft:
@@ -394,14 +425,14 @@ def render_page(p, pages, draft, hub_live, wa):
         banner = ""
 
     return layout(page_title, p.description, head, schema, analytics, main, banner, scripts,
-                  hub_live, wa, "is-draft" if draft else "is-article")
+                  hub_live, p.draft_path if draft else p.path, "is-draft" if draft else "is-article")
 
 
-def layout(title, description, head, schema, analytics, main, banner, scripts, hub_live, wa, body_class):
-    nav = '        <a href="/مقالات/">مقالات</a>\n' if hub_live else ""
+def layout(title, description, head, schema, analytics, main, banner, scripts, hub_live, current, body_class):
+    header, footer = site_chrome(current, hub_live)
     return fill(tpl("layout.html"), title=esc(title), description=esc(description), head=head,
                 schema=schema, analytics=analytics, main=main, banner=banner, scripts=scripts,
-                nav_articles=nav, sheet_articles=nav, wa_path=wa, body_class=body_class)
+                site_header=header, site_footer=footer, body_class=body_class)
 
 
 def redirect_page(target):
@@ -416,7 +447,7 @@ def redirect_page(target):
             '</body>\n</html>\n')
 
 
-def render_hub(pages, wa):
+def render_hub(pages):
     live = [p for p in pages if p.live]
     pillars = [p for p in live if p.type == "pillar"]
     groups = []
@@ -451,7 +482,7 @@ def render_hub(pages, wa):
             {"@type": "ListItem", "position": 2, "name": "مقالات"}]},
     ]})
     main = fill(tpl("hub.html"), groups="\n".join(groups))
-    return layout(f"مقالات | {DOCTOR}", desc, head, schema, ANALYTICS, main, "", "", True, wa, "is-hub")
+    return layout(f"مقالات | {DOCTOR}", desc, head, schema, ANALYTICS, main, "", "", True, f"/{HUB_DIR}/", "is-hub")
 
 
 def render_sitemap(pages, hub_live):
@@ -484,20 +515,20 @@ def check_links(rel_file, text, known):
 
 def build():
     pages = load_pages()
-    wa = wa_path()
     hub_live = any(p.live for p in pages)
+    apply_static_chrome(hub_live)
     outputs = {}
     known = {"/", f"/{HUB_DIR}/"} | {p.path for p in pages if p.live} | {p.draft_path for p in pages if not p.live}
 
     for p in pages:
         if p.live:
-            outputs[f"{p.slug}/index.html"] = render_page(p, pages, False, hub_live, wa)
+            outputs[f"{p.slug}/index.html"] = render_page(p, pages, False, hub_live)
             if p.token:
                 outputs[f"{DRAFT_DIR}/{p.token}/index.html"] = redirect_page(p.path)
         else:
-            outputs[f"{DRAFT_DIR}/{p.token}/index.html"] = render_page(p, pages, True, hub_live, wa)
+            outputs[f"{DRAFT_DIR}/{p.token}/index.html"] = render_page(p, pages, True, hub_live)
     if hub_live:
-        outputs[f"{HUB_DIR}/index.html"] = render_hub(pages, wa)
+        outputs[f"{HUB_DIR}/index.html"] = render_hub(pages)
     outputs["sitemap.xml"] = render_sitemap(pages, hub_live)
 
     old = json.loads(MANIFEST.read_text(encoding="utf-8")) if MANIFEST.exists() else []

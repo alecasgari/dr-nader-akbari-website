@@ -99,9 +99,12 @@ document.addEventListener("click", (e) => {
   if (!a || typeof gtag !== "function") return;
   const href = a.getAttribute("href") || "";
   const where = a.closest(".dock") ? "dock" : a.closest(".site-header") ? "header" : a.closest(".site-footer") ? "footer" : "page";
-  if (a.hasAttribute("data-wa")) gtag("event", "whatsapp_click", { link_location: where });
-  else if (href.startsWith("tel:")) gtag("event", "phone_click", { link_location: where });
-  else if (a.classList.contains("map-link")) gtag("event", "map_click", { link_location: where });
+  const name = a.hasAttribute("data-wa") ? "whatsapp_click"
+    : href.startsWith("tel:") ? "phone_click"
+    : a.classList.contains("map-link") ? "map_click" : "";
+  if (!name) return;
+  gtag("event", name, { link_location: where });
+  dataLayer.push({ event: name, link_location: where });
 });
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -26,27 +26,34 @@
     {"@type":"Question","name":"اطلاعات و دستورالعمل‌های جراحی لوزه و لوزه سوم","acceptedAnswer":{"@type":"Answer","text":"فایل دستورالعمل را از صفحه دستورالعمل‌ها دانلود کنید."}}
   ]}
   </script>
-  <!-- Google tag GT-TNF2V7K + GA4 G-T3P18C5N3Q (stream 5212067106, drnaderakbari.com) -->
+  <!-- analytics -->
+  <!-- Google tag GT-TNF2V7K + GA4 G-T3P18C5N3Q (stream 5212067106) and Google Tag Manager GTM-N5FRJM47. GA4 is sent from here, so it must not also be added as a tag inside GTM. -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){ dataLayer.push(arguments); }
     gtag("js", new Date());
     gtag("config", "GT-TNF2V7K");
     gtag("config", "G-T3P18C5N3Q");
+    dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
     addEventListener("load", function () {
       setTimeout(function () {
-        var s = document.createElement("script");
-        s.async = true;
-        s.src = "https://www.googletagmanager.com/gtag/js?id=GT-TNF2V7K";
-        document.head.appendChild(s);
+        ["https://www.googletagmanager.com/gtag/js?id=GT-TNF2V7K",
+         "https://www.googletagmanager.com/gtm.js?id=GTM-N5FRJM47"].forEach(function (src) {
+          var s = document.createElement("script");
+          s.async = true;
+          s.src = src;
+          document.head.appendChild(s);
+        });
       }, 1500);
     });
   </script>
+  <!-- /analytics -->
 </head>
 <body>
   <a class="skip" href="/دستورالعمل/#content">پرش به محتوا</a>
 
   <!-- site-header -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N5FRJM47" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <header class="site-header">
     <div class="wrap header-inner">
       <a class="logo" href="/" aria-label="صفحه اصلی دکتر نادر اکبری">

@@ -36,22 +36,6 @@ HUB_DIR = "مقالات"
 DEFAULT_IMAGE = SITE + "/images/hero.webp"
 STATIC_PAGES = [("/", "1.0"), ("/دستورالعمل/", "0.8")]
 
-ANALYTICS = """  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
-    gtag("js", new Date());
-    gtag("config", "GT-TNF2V7K");
-    gtag("config", "G-T3P18C5N3Q");
-    addEventListener("load", function () {
-      setTimeout(function () {
-        var s = document.createElement("script");
-        s.async = true;
-        s.src = "https://www.googletagmanager.com/gtag/js?id=GT-TNF2V7K";
-        document.head.appendChild(s);
-      }, 1500);
-    });
-  </script>"""
-
 FA_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 FA_MONTHS = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
              "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"]
@@ -118,18 +102,22 @@ WA_PATH = ("M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.
            "m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884"
            "m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z")
 
-# Hand-written pages whose header/footer are filled in from the shared templates.
-STATIC_CHROME = {"index.html": "/", "دستورالعمل/index.html": "/دستورالعمل/"}
+ANALYTICS = tpl("analytics.html").replace("\r\n", "\n").rstrip("\n")
+GTM_NOSCRIPT = ('  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N5FRJM47" '
+                'height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>\n')
+
+# Hand-written pages filled in from the shared templates; None = analytics only, no header/footer.
+STATIC_CHROME = {"index.html": "/", "دستورالعمل/index.html": "/دستورالعمل/", "404.html": None}
 
 
-def site_chrome(current, hub_live):
+def site_chrome(current, hub_live, tracking=True):
     nav = tpl("nav.html").replace("\r\n", "\n").rstrip("\n")
     if not hub_live:
         nav = "\n".join(l for l in nav.split("\n") if f'href="/{HUB_DIR}/"' not in l)
     nav = nav.replace(f'<a href="{current}">', f'<a href="{current}" aria-current="page">')
     header = fill(tpl("header.html"), nav=nav, wa_path=WA_PATH).replace("\r\n", "\n")
     footer = fill(tpl("footer.html"), nav=nav, wa_path=WA_PATH).replace("\r\n", "\n")
-    return header, footer
+    return (GTM_NOSCRIPT if tracking else "") + header, footer
 
 
 def apply_static_chrome(hub_live):
@@ -138,8 +126,10 @@ def apply_static_chrome(hub_live):
         raw = f.read_bytes().decode("utf-8")
         eol = "\r\n" if "\r\n" in raw else "\n"
         text = raw.replace("\r\n", "\n")
-        header, footer = site_chrome(current, hub_live)
-        for name, block in (("site-header", header), ("site-footer", footer)):
+        blocks = [("analytics", ANALYTICS + "\n")]
+        if current:
+            blocks += list(zip(("site-header", "site-footer"), site_chrome(current, hub_live)))
+        for name, block in blocks:
             pat = re.compile(rf"(  <!-- {name} -->\n).*?(  <!-- /{name} -->\n)", re.S)
             if not pat.search(text):
                 raise SystemExit(f"{rel}: missing <!-- {name} --> markers")
@@ -147,7 +137,7 @@ def apply_static_chrome(hub_live):
         out = text.replace("\n", eol)
         if out != raw:
             f.write_bytes(out.encode("utf-8"))
-            print(f"  updated header/footer in {rel}")
+            print(f"  updated shared blocks in {rel}")
 
 
 def json_ld(data):
@@ -429,7 +419,7 @@ def render_page(p, pages, draft, hub_live):
 
 
 def layout(title, description, head, schema, analytics, main, banner, scripts, hub_live, current, body_class):
-    header, footer = site_chrome(current, hub_live)
+    header, footer = site_chrome(current, hub_live, bool(analytics))
     return fill(tpl("layout.html"), title=esc(title), description=esc(description), head=head,
                 schema=schema, analytics=analytics, main=main, banner=banner, scripts=scripts,
                 site_header=header, site_footer=footer, body_class=body_class)

@@ -32,7 +32,8 @@ DOCTOR_ID = SITE + "/#doctor"
 DOCTOR = "دکتر نادر اکبری دیلمقانی"
 ENDPOINT = "https://n8n.alecasgari.com/webhook/dr-akbari-approval"
 DRAFT_DIR = "پیش-نویس"
-HUB_DIR = "مقالات"
+HUB_DIR = "بلاگ"
+HUB_LEGACY = "مقالات"
 DEFAULT_IMAGE = SITE + "/images/hero.webp"
 STATIC_PAGES = [("/", "1.0"), ("/دستورالعمل/", "0.8")]
 
@@ -110,17 +111,66 @@ GTM_NOSCRIPT = ('  <noscript><iframe src="https://www.googletagmanager.com/ns.ht
 STATIC_CHROME = {"index.html": "/", "دستورالعمل/index.html": "/دستورالعمل/", "404.html": None}
 
 
-def site_chrome(current, hub_live, tracking=True):
-    nav = tpl("nav.html").replace("\r\n", "\n").rstrip("\n")
-    if not hub_live:
-        nav = "\n".join(l for l in nav.split("\n") if f'href="/{HUB_DIR}/"' not in l)
-    nav = nav.replace(f'<a href="{current}">', f'<a href="{current}" aria-current="page">')
+def page_category(p):
+    g = p.meta.get
+    if g("category"):
+        return str(g("category")).strip()
+    if g("kicker"):
+        return str(g("kicker")).strip()
+    return "راهنمای درمان" if p.type == "pillar" else "مقالات"
+
+
+def page_excerpt(p):
+    g = p.meta.get
+    return str(g("description") or g("lead") or "").strip()
+
+
+def page_search_blob(p):
+    body = re.sub(r"^---\n.*?\n---\n", "", p.source, flags=re.S)
+    body = re.sub(r"!\[[^\]]*\]\([^)]+\)", "", body)
+    body = re.sub(r"\{[^}]+\}", "", body)
+    body = re.sub(r"[#>*_\[\]|`-]", " ", body)
+    body = re.sub(r"\s+", " ", body).strip()
+    parts = [p.title, page_category(p), page_excerpt(p), body[:1200]]
+    return " ".join(parts)
+
+
+def pillar_nav_lines(pages):
+    lines = []
+    for p in sorted((x for x in pages if x.live and x.type == "pillar"), key=lambda x: x.title):
+        label = str(p.meta.get("nav_title") or p.title).strip()
+        lines.append(f'        <a href="{p.path}">{esc(label)}</a>')
+    return lines
+
+
+def build_nav(current, hub_live, pages):
+    lines = [
+        '        <a href="/">خانه</a>',
+        '        <a href="/#about">درباره</a>',
+        '        <a href="/#services">خدمات</a>',
+    ]
+    if hub_live:
+        lines.extend(pillar_nav_lines(pages))
+        lines.append(f'        <a href="/{HUB_DIR}/">بلاگ</a>')
+    lines += [
+        '        <a href="/دستورالعمل/">دستورالعمل</a>',
+        '        <a href="https://www.instagram.com/dr.naderakbari/" target="_blank" rel="noopener">ویدیو</a>',
+        '        <a href="/#contact">تماس</a>',
+    ]
+    nav = "\n".join(lines)
+    if current:
+        nav = nav.replace(f'href="{current}">', f'href="{current}" aria-current="page">', 1)
+    return nav
+
+
+def site_chrome(current, hub_live, pages, tracking=True):
+    nav = build_nav(current, hub_live, pages)
     header = fill(tpl("header.html"), nav=nav, wa_path=WA_PATH).replace("\r\n", "\n")
     footer = fill(tpl("footer.html"), nav=nav, wa_path=WA_PATH).replace("\r\n", "\n")
     return (GTM_NOSCRIPT if tracking else "") + header, footer
 
 
-def apply_static_chrome(hub_live):
+def apply_static_chrome(hub_live, pages):
     for rel, current in STATIC_CHROME.items():
         f = ROOT / rel
         raw = f.read_bytes().decode("utf-8")
@@ -128,7 +178,7 @@ def apply_static_chrome(hub_live):
         text = raw.replace("\r\n", "\n")
         blocks = [("analytics", ANALYTICS + "\n")]
         if current:
-            blocks += list(zip(("site-header", "site-footer"), site_chrome(current, hub_live)))
+            blocks += list(zip(("site-header", "site-footer"), site_chrome(current, hub_live, pages)))
         for name, block in blocks:
             pat = re.compile(rf"(  <!-- {name} -->\n).*?(  <!-- /{name} -->\n)", re.S)
             if not pat.search(text):
@@ -234,6 +284,30 @@ def card(p):
             f'<span>{esc(p.description)}</span></a>')
 
 
+def hub_card(p):
+    cat = esc(page_category(p))
+    excerpt = esc(page_excerpt(p))
+    kind = "صفحه راهنما" if p.type == "pillar" else "مقاله"
+    date = jalali(p.updated or p.published) if (p.updated or p.published) else ""
+    meta = f"{kind}" + (f" · {date}" if date else "")
+    search = esc(page_search_blob(p))
+    img = p.meta.get("image") or ""
+    media = ""
+    if img:
+        w, h = image_size(str(img))
+        media = (f'              <div class="blog-card-media">\n'
+                 f'                <img src="{esc(img)}" width="{w}" height="{h}" alt="" loading="lazy" '
+                 f'decoding="async">\n              </div>\n')
+    return (f'          <article class="blog-card" data-category="{cat}" data-search="{search}">\n'
+            f'            <a class="blog-card-link" href="{esc(p.path)}">\n{media}'
+            f'              <div class="blog-card-body">\n'
+            f'                <span class="blog-badge">{cat}</span>\n'
+            f'                <h2 class="blog-card-title">{esc(p.title)}</h2>\n'
+            f'                <p class="blog-card-excerpt">{excerpt}</p>\n'
+            f'                <p class="blog-card-meta">{esc(meta)}</p>\n'
+            f'              </div>\n            </a>\n          </article>')
+
+
 def render_page(p, pages, draft, hub_live):
     by_slug = {x.slug: x for x in pages}
     asks = re.findall(r"\[\[(.+?)\]\]", p.source)
@@ -250,7 +324,7 @@ def render_page(p, pages, draft, hub_live):
 
     crumbs = [("خانه", "/")]
     if hub_live:
-        crumbs.append(("مقالات", f"/{HUB_DIR}/"))
+        crumbs.append(("بلاگ", f"/{HUB_DIR}/"))
     if p.type == "article" and pillar and pillar.live:
         crumbs.append((pillar.title, pillar.path))
     crumbs.append((p.title, None))
@@ -415,11 +489,11 @@ def render_page(p, pages, draft, hub_live):
         banner = ""
 
     return layout(page_title, p.description, head, schema, analytics, main, banner, scripts,
-                  hub_live, p.draft_path if draft else p.path, "is-draft" if draft else "is-article")
+                  hub_live, p.draft_path if draft else p.path, "is-draft" if draft else "is-article", pages)
 
 
-def layout(title, description, head, schema, analytics, main, banner, scripts, hub_live, current, body_class):
-    header, footer = site_chrome(current, hub_live, bool(analytics))
+def layout(title, description, head, schema, analytics, main, banner, scripts, hub_live, current, body_class, pages=()):
+    header, footer = site_chrome(current, hub_live, pages, bool(analytics))
     return fill(tpl("layout.html"), title=esc(title), description=esc(description), head=head,
                 schema=schema, analytics=analytics, main=main, banner=banner, scripts=scripts,
                 site_header=header, site_footer=footer, body_class=body_class)
@@ -439,40 +513,40 @@ def redirect_page(target):
 
 def render_hub(pages):
     live = [p for p in pages if p.live]
-    pillars = [p for p in live if p.type == "pillar"]
-    groups = []
-    for pl in pillars:
-        kids = [p for p in live if p.type == "article" and p.pillar == pl.slug]
-        groups.append(f'        <div class="hub-group">\n          <h2><a href="{esc(pl.path)}">{esc(pl.title)}</a></h2>\n'
-                      f'          <div class="card-list">\n' + "\n".join(card(k) for k in [pl] + kids) +
-                      '\n          </div>\n        </div>')
-    pillar_slugs = {pl.slug for pl in pillars}
-    rest = [p for p in live if p.type == "article" and p.pillar not in pillar_slugs]
-    if rest:
-        groups.append('        <div class="hub-group">\n          <h2>سایر مقالات</h2>\n'
-                      '          <div class="card-list">\n' + "\n".join(card(k) for k in rest) +
-                      '\n          </div>\n        </div>')
+    live.sort(key=lambda p: (0 if p.type == "pillar" else 1, -(p.updated or p.published or dt.date.min).toordinal()))
+    cats = sorted({page_category(p) for p in live})
+    filters = ('          <button type="button" class="blog-filter is-active" data-filter="all">همه</button>\n' +
+               "\n".join(f'          <button type="button" class="blog-filter" data-filter="{esc(c)}">{esc(c)}</button>'
+                         for c in cats))
+    cards = "\n".join(hub_card(p) for p in live)
     url = abs_url(f"/{HUB_DIR}/")
-    desc = "مقالات آموزشی درباره سینوزیت، پولیپ بینی، جراحی قاعده جمجمه و رینوپلاستی، بازبینی‌شده توسط دکتر نادر اکبری دیلمقانی."
+    page_title = f"بلاگ آموزشی گوش، حلق و بینی | {DOCTOR}"
+    desc = ("مقالات و راهنمای بیماران درباره سینوزیت، جراحی آندوسکوپی سینوس، شستشوی بینی و سایر "
+            "موضوعات گوش و حلق و بینی؛ بازبینی‌شده توسط دکتر نادر اکبری دیلمقانی.")
     head = "\n".join([
         f'  <link rel="canonical" href="{url}">',
         '  <meta name="robots" content="index, follow, max-image-preview:large">',
         '  <meta property="og:locale" content="fa_IR">',
         '  <meta property="og:type" content="website">',
-        '  <meta property="og:title" content="مقالات دکتر نادر اکبری">',
+        f'  <meta property="og:title" content="{esc(page_title)}">',
         f'  <meta property="og:description" content="{esc(desc)}">',
         f'  <meta property="og:url" content="{url}">',
         f'  <meta property="og:image" content="{DEFAULT_IMAGE}">',
     ])
+    items = [{"@type": "ListItem", "position": i + 1, "url": abs_url(p.path), "name": p.title}
+             for i, p in enumerate(live)]
     schema = json_ld({"@context": "https://schema.org", "@graph": [
-        {"@type": "CollectionPage", "@id": url + "#page", "url": url, "name": "مقالات دکتر نادر اکبری",
-         "inLanguage": "fa-IR", "isPartOf": {"@id": SITE + "/#website"}},
+        {"@type": "CollectionPage", "@id": url + "#page", "url": url, "name": "بلاگ دکتر نادر اکبری",
+         "description": desc, "inLanguage": "fa-IR", "isPartOf": {"@id": SITE + "/#website"},
+         "mainEntity": {"@type": "ItemList", "itemListElement": items}},
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "خانه", "item": SITE + "/"},
-            {"@type": "ListItem", "position": 2, "name": "مقالات"}]},
+            {"@type": "ListItem", "position": 2, "name": "بلاگ"}]},
     ]})
-    main = fill(tpl("hub.html"), groups="\n".join(groups))
-    return layout(f"مقالات | {DOCTOR}", desc, head, schema, ANALYTICS, main, "", "", True, f"/{HUB_DIR}/", "is-hub")
+    main = fill(tpl("hub.html"), filters=filters, cards=cards, count=fa(len(live)))
+    scripts = '  <script src="/js/blog.js" defer></script>\n'
+    return layout(page_title, desc, head, schema, ANALYTICS, main, "", scripts, True,
+                  f"/{HUB_DIR}/", "is-blog", pages)
 
 
 def render_sitemap(pages, hub_live):
@@ -506,7 +580,7 @@ def check_links(rel_file, text, known):
 def build():
     pages = load_pages()
     hub_live = any(p.live for p in pages)
-    apply_static_chrome(hub_live)
+    apply_static_chrome(hub_live, pages)
     outputs = {}
     known = {"/", f"/{HUB_DIR}/"} | {p.path for p in pages if p.live} | {p.draft_path for p in pages if not p.live}
 
@@ -519,6 +593,7 @@ def build():
             outputs[f"{DRAFT_DIR}/{p.token}/index.html"] = render_page(p, pages, True, hub_live)
     if hub_live:
         outputs[f"{HUB_DIR}/index.html"] = render_hub(pages)
+        outputs[f"{HUB_LEGACY}/index.html"] = redirect_page(f"/{HUB_DIR}/")
     outputs["sitemap.xml"] = render_sitemap(pages, hub_live)
 
     old = json.loads(MANIFEST.read_text(encoding="utf-8")) if MANIFEST.exists() else []

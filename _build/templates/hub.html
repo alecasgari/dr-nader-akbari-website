@@ -3,17 +3,30 @@
         <nav class="breadcrumb" aria-label="مسیر صفحه">
           <ol>
             <li><a href="/">خانه</a></li>
-            <li aria-current="page">مقالات</li>
+            <li aria-current="page">بلاگ</li>
           </ol>
         </nav>
         <p class="kicker">راهنمای بیماران</p>
-        <h1>مقالات سینوس، پولیپ بینی، قاعده جمجمه و رینوپلاستی</h1>
-        <p class="lead">مطالب آموزشی بازبینی‌شده توسط دکتر نادر اکبری دیلمقانی، فلوشیپ راینولوژی و جراحی قاعده جمجمه.</p>
+        <h1>بلاگ آموزشی گوش، حلق و بینی</h1>
+        <p class="lead">مطالب بازبینی‌شده توسط دکتر نادر اکبری دیلمقانی درباره سینوزیت، جراحی سینوس، مراقبت بعد از عمل و سایر موضوعات تخصصی.</p>
+        <p class="blog-count" id="blog-count">{{count}} مطلب</p>
       </div>
     </section>
 
-    <section class="article-section">
+    <section class="article-section blog-hub">
       <div class="wrap">
-{{groups}}
+        <div class="blog-toolbar" role="search">
+          <label class="blog-search-label" for="blog-search">جستجو در بلاگ</label>
+          <input class="blog-search" id="blog-search" type="search" inputmode="search" autocomplete="off"
+                 placeholder="عنوان، موضوع یا متن مطلب…" aria-controls="blog-grid" aria-describedby="blog-status">
+          <p class="blog-status" id="blog-status" aria-live="polite"></p>
+        </div>
+        <div class="blog-filters" role="group" aria-label="دسته‌بندی">
+{{filters}}
+        </div>
+        <div class="blog-grid" id="blog-grid" data-loading="false">
+{{cards}}
+        </div>
+        <p class="blog-empty" id="blog-empty" hidden>مطلبی با این فیلتر پیدا نشد.</p>
       </div>
     </section>

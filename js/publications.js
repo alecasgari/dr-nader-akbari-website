@@ -257,6 +257,7 @@
     syncModalFromMain();
     modal.hidden = false;
     document.body.classList.add("pub-modal-open");
+    if (fab) fab.hidden = true;
     modalApply?.focus();
   }
 
@@ -264,7 +265,8 @@
     if (!modal) return;
     modal.hidden = true;
     document.body.classList.remove("pub-modal-open");
-    fab?.focus();
+    updateFabVisibility();
+    if (fab && !fab.hidden) fab.focus();
   }
 
   function updateFabVisibility() {

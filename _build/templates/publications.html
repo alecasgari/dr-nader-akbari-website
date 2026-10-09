@@ -8,7 +8,10 @@
         </nav>
         <p class="kicker">فعالیت‌های پژوهشی</p>
         <h1>مقالات علمی دکتر نادر اکبری دیلمقانی</h1>
-        <p class="lead">فهرست مقالات منتشرشده در مجلات علمی‌پژوهشی، با داده‌های استناد از Google Scholar. عنوان، نویسندگان و نام ژورنال به زبان اصلی نمایش داده می‌شوند.</p>
+        <p class="lead">فهرست مقالات منتشرشده در مجلات علمی‌پژوهشی، با داده‌های استناد از Google Scholar.</p>
+        <div class="pub-intro">
+          <p>اگر به‌دنبال <strong>مقالات دکتر نادر اکبری</strong> یا <strong>مقالات علمی جراح بینی</strong> و متخصص گوش، حلق و بینی هستید، این صفحه مرجع شماست. دکتر نادر اکبری دیلمقانی، دانشیار و فلوشیپ راینولوژی و جراحی قاعده جمجمه، ده‌ها مقاله در زمینه سینوس، رینوپلاستی، آندوسکوپی و تحقیقات بالینی منتشر کرده است. در ادامه می‌توانید میان <a href="/مقالات-علمی/#pub-list">مقالات علمی</a> جستجو کنید، بر اساس سال و موضوع فیلتر بگیرید و برای جزئیات هر مورد به پروفایل Google Scholar مراجعه کنید. عنوان، نویسندگان و نام ژورنال عمداً به زبان اصلی نمایش داده می‌شوند.</p>
+        </div>
         <div class="pub-stats" id="pub-stats" aria-live="polite"></div>
         <p class="pub-meta">
           <span id="pub-updated"></span>
@@ -18,9 +21,11 @@
       </div>
     </section>
 
-    <section class="article-section pub-hub">
+    <section class="article-section pub-hub" id="pub-list" aria-labelledby="pub-list-heading">
       <div class="wrap">
-        <div class="pub-toolbar" role="search">
+        <h2 class="pub-list-heading" id="pub-list-heading">فهرست مقالات</h2>
+        <p class="pub-count" id="pub-count" aria-live="polite"></p>
+        <div class="pub-toolbar pub-toolbar--desktop" role="search">
           <label class="visually-hidden" for="pub-search">جستجو در مقالات</label>
           <input class="pub-search" id="pub-search" type="search" inputmode="search" autocomplete="off"
                  placeholder="جستجو در عنوان، نویسندگان، ژورنال یا موضوع…" aria-controls="pub-grid" aria-describedby="pub-count">
@@ -39,10 +44,44 @@
               <option value="citations">بیشترین استناد</option>
             </select>
           </div>
-          <p class="pub-count" id="pub-count" aria-live="polite"></p>
         </div>
         <div class="pub-grid" id="pub-grid" data-loading="true" aria-busy="true"></div>
+        <nav class="pub-pagination" id="pub-pagination" aria-label="صفحه‌بندی مقالات" hidden></nav>
         <p class="pub-empty" id="pub-empty" hidden>مقاله‌ای با این فیلتر پیدا نشد.</p>
         <p class="pub-error" id="pub-error" hidden>بارگذاری فهرست مقالات ممکن نشد. لطفاً بعداً دوباره تلاش کنید.</p>
       </div>
     </section>
+
+    <button type="button" class="pub-fab" id="pub-fab" aria-haspopup="dialog" aria-controls="pub-modal" hidden>
+      فیلتر و مرتب‌سازی
+    </button>
+    <div class="pub-modal" id="pub-modal" role="dialog" aria-modal="true" aria-labelledby="pub-modal-title" hidden>
+      <div class="pub-modal__backdrop" data-pub-close tabindex="-1" aria-hidden="true"></div>
+      <div class="pub-modal__panel">
+        <header class="pub-modal__head">
+          <h2 class="pub-modal__title" id="pub-modal-title">فیلتر و مرتب‌سازی</h2>
+          <button type="button" class="pub-modal__close" data-pub-close aria-label="بستن">×</button>
+        </header>
+        <div class="pub-modal__body">
+          <label class="pub-modal__label" for="pub-search-m">جستجو</label>
+          <input class="pub-search" id="pub-search-m" type="search" inputmode="search" autocomplete="off"
+                 placeholder="عنوان، نویسندگان، ژورنال…">
+          <label class="pub-modal__label" for="pub-year-m">سال</label>
+          <select class="pub-select" id="pub-year-m" aria-label="فیلتر سال">
+            <option value="">همه سال‌ها</option>
+          </select>
+          <label class="pub-modal__label" for="pub-topic-m">موضوع</label>
+          <select class="pub-select" id="pub-topic-m" aria-label="فیلتر موضوع">
+            <option value="">همه موضوعات</option>
+          </select>
+          <label class="pub-modal__label" for="pub-sort-m">مرتب‌سازی</label>
+          <select class="pub-select" id="pub-sort-m" aria-label="مرتب‌سازی">
+            <option value="year">جدیدترین اول</option>
+            <option value="citations">بیشترین استناد</option>
+          </select>
+        </div>
+        <footer class="pub-modal__foot">
+          <button type="button" class="btn btn-primary pub-modal__apply" id="pub-modal-apply">اعمال فیلترها</button>
+        </footer>
+      </div>
+    </div>

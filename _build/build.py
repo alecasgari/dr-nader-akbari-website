@@ -614,27 +614,54 @@ def render_hub(pages):
 def render_publications(pages, hub_live):
     data = load_publications_bundle()
     stats = data.get("stats", {}) if data else {}
+    pubs = (data or {}).get("publications") or []
     url = abs_url(f"/{PUB_DIR}/")
-    page_title = f"مقالات علمی | {DOCTOR}"
+    pub_og = SITE + "/images/articles/publications/og.jpg"
+    page_title = "مقالات علمی دکتر نادر اکبری | جراح بینی و راینولوژیست"
     desc = (
-        "فهرست مقالات علمی دکتر نادر اکبری دیلمقانی در مجلات پژوهشی، "
-        "با آمار استناد از Google Scholar؛ جستجو و فیلتر بر اساس سال و موضوع."
+        "مقالات علمی دکتر نادر اکبری دیلمقانی، جراح بینی و فلوشیپ راینولوژی: "
+        f"{stats.get('total', len(pubs))} مقاله با آمار استناد از Google Scholar. "
+        "جستجو، فیلتر سال و موضوع، مرتب‌سازی بر اساس تاریخ و استناد."
     )
+    og_alt = "مقالات علمی دکتر نادر اکبری دیلمقانی — جراح بینی و راینولوژیست"
     head = "\n".join([
         f'  <link rel="canonical" href="{url}">',
         '  <meta name="robots" content="index, follow, max-image-preview:large">',
         '  <meta property="og:locale" content="fa_IR">',
         '  <meta property="og:type" content="website">',
+        '  <meta property="og:site_name" content="دکتر نادر اکبری">',
         f'  <meta property="og:title" content="{esc(page_title)}">',
         f'  <meta property="og:description" content="{esc(desc)}">',
         f'  <meta property="og:url" content="{url}">',
-        f'  <meta property="og:image" content="{DEFAULT_IMAGE}">',
+        f'  <meta property="og:image" content="{pub_og}">',
+        f'  <meta property="og:image:width" content="1200">',
+        f'  <meta property="og:image:height" content="630">',
+        f'  <meta property="og:image:alt" content="{esc(og_alt)}">',
+        '  <meta name="twitter:card" content="summary_large_image">',
+        f'  <meta name="twitter:title" content="{esc(page_title)}">',
+        f'  <meta name="twitter:description" content="{esc(desc)}">',
+        f'  <meta name="twitter:image" content="{pub_og}">',
+        f'  <meta name="twitter:image:alt" content="{esc(og_alt)}">',
     ])
+    list_items = []
+    for i, p in enumerate(pubs[:30]):
+        article = {"@type": "ScholarlyArticle", "name": p.get("title"), "url": p.get("url")}
+        if p.get("authors"):
+            article["author"] = p.get("authors")
+        if p.get("year"):
+            article["datePublished"] = str(p.get("year"))
+        if p.get("journal"):
+            article["isPartOf"] = p.get("journal")
+        list_items.append({"@type": "ListItem", "position": i + 1, "item": article})
     schema = json_ld({"@context": "https://schema.org", "@graph": [
-        {"@type": "ProfilePage", "@id": url + "#page", "url": url, "name": "مقالات علمی دکتر نادر اکبری",
+        {"@type": "CollectionPage", "@id": url + "#page", "url": url,
+         "name": "مقالات علمی دکتر نادر اکبری دیلمقانی",
          "description": desc, "inLanguage": "fa-IR", "isPartOf": {"@id": SITE + "/#website"},
-         "mainEntity": {"@id": DOCTOR_ID}},
-        {"@type": "Physician", "@id": DOCTOR_ID, "name": DOCTOR, "url": SITE + "/",
+         "image": {"@type": "ImageObject", "url": pub_og, "width": 1200, "height": 630},
+         "mainEntity": {"@type": "ItemList", "numberOfItems": stats.get("total", len(pubs)),
+                        "itemListElement": list_items}},
+        {"@type": "Person", "@id": DOCTOR_ID, "name": DOCTOR, "url": SITE + "/",
+         "jobTitle": "جراح بینی و فلوشیپ راینولوژی",
          "sameAs": [stats.get("scholarUrl") or SCHOLAR_URL]},
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "خانه", "item": SITE + "/"},

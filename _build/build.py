@@ -484,6 +484,7 @@ def render_page(p, pages, draft, hub_live):
         related=related,
         comments=comments,
         hero_image=hero_image,
+        instr_download=tpl("instr-download.html") if p.slug == "دستورالعمل" else "",
     )
 
     page_title = g("seo_title") or f"{p.title} | {DOCTOR}"
@@ -550,8 +551,11 @@ def render_page(p, pages, draft, hub_live):
         analytics = ANALYTICS
         banner = ""
 
+    body_class = "is-draft" if draft else "is-article"
+    if p.slug == "دستورالعمل":
+        body_class += " has-instr-dl"
     return layout(page_title, p.description, head, schema, analytics, main, banner, scripts,
-                  hub_live, p.draft_path if draft else p.path, "is-draft" if draft else "is-article", pages)
+                  hub_live, p.draft_path if draft else p.path, body_class, pages)
 
 
 def layout(title, description, head, schema, analytics, main, banner, scripts, hub_live, current, body_class, pages=()):

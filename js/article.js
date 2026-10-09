@@ -14,6 +14,24 @@
     modal.querySelectorAll("[data-close-modal]").forEach((btn) => btn.addEventListener("click", () => modal.close()));
   });
 
+  const instrFab = document.getElementById("instr-fab");
+  const instrModal = document.getElementById("instr-dl-modal");
+  if (instrFab && instrModal) {
+    const closeInstr = () => {
+      instrModal.hidden = true;
+      document.body.classList.remove("instr-dl-open");
+    };
+    const openInstr = () => {
+      instrModal.hidden = false;
+      document.body.classList.add("instr-dl-open");
+    };
+    instrFab.addEventListener("click", openInstr);
+    instrModal.querySelectorAll("[data-instr-close]").forEach((el) => el.addEventListener("click", closeInstr));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !instrModal.hidden) closeInstr();
+    });
+  }
+
   const box = document.getElementById("comments");
   if (!box) return;
 

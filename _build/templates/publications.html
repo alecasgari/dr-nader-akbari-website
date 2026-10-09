@@ -1,0 +1,48 @@
+    <section class="page-hero pub-hero">
+      <div class="wrap">
+        <nav class="breadcrumb" aria-label="مسیر صفحه">
+          <ol>
+            <li><a href="/">خانه</a></li>
+            <li aria-current="page">مقالات علمی</li>
+          </ol>
+        </nav>
+        <p class="kicker">فعالیت‌های پژوهشی</p>
+        <h1>مقالات علمی دکتر نادر اکبری دیلمقانی</h1>
+        <p class="lead">فهرست مقالات منتشرشده در مجلات علمی‌پژوهشی، با داده‌های استناد از Google Scholar. عنوان، نویسندگان و نام ژورنال به زبان اصلی نمایش داده می‌شوند.</p>
+        <div class="pub-stats" id="pub-stats" aria-live="polite"></div>
+        <p class="pub-meta">
+          <span id="pub-updated"></span>
+          <span class="pub-meta-sep" aria-hidden="true"> · </span>
+          <a id="pub-scholar-link" href="https://scholar.google.com/citations?user=13wD0fwAAAAJ&amp;hl=en" target="_blank" rel="noopener noreferrer">پروفایل Google Scholar</a>
+        </p>
+      </div>
+    </section>
+
+    <section class="article-section pub-hub">
+      <div class="wrap">
+        <div class="pub-toolbar" role="search">
+          <label class="visually-hidden" for="pub-search">جستجو در مقالات</label>
+          <input class="pub-search" id="pub-search" type="search" inputmode="search" autocomplete="off"
+                 placeholder="جستجو در عنوان، نویسندگان، ژورنال یا موضوع…" aria-controls="pub-grid" aria-describedby="pub-count">
+          <div class="pub-filters">
+            <label class="visually-hidden" for="pub-year">سال</label>
+            <select class="pub-select" id="pub-year" aria-label="فیلتر سال">
+              <option value="">همه سال‌ها</option>
+            </select>
+            <label class="visually-hidden" for="pub-topic">موضوع</label>
+            <select class="pub-select" id="pub-topic" aria-label="فیلتر موضوع">
+              <option value="">همه موضوعات</option>
+            </select>
+            <label class="visually-hidden" for="pub-sort">مرتب‌سازی</label>
+            <select class="pub-select" id="pub-sort" aria-label="مرتب‌سازی">
+              <option value="year">جدیدترین اول</option>
+              <option value="citations">بیشترین استناد</option>
+            </select>
+          </div>
+          <p class="pub-count" id="pub-count" aria-live="polite"></p>
+        </div>
+        <div class="pub-grid" id="pub-grid" data-loading="true" aria-busy="true"></div>
+        <p class="pub-empty" id="pub-empty" hidden>مقاله‌ای با این فیلتر پیدا نشد.</p>
+        <p class="pub-error" id="pub-error" hidden>بارگذاری فهرست مقالات ممکن نشد. لطفاً بعداً دوباره تلاش کنید.</p>
+      </div>
+    </section>

@@ -65,12 +65,14 @@ if (counters.length) {
         if (!entry.isIntersecting) return;
         const el = entry.target;
         const to = Number(el.dataset.count);
+        const suffix = el.dataset.countSuffix !== undefined ? el.dataset.countSuffix : "+";
+        const locale = el.dataset.countLocale || "en-US";
         const start = performance.now();
         const dur = 1400;
         const tick = (now) => {
           const p = Math.min(1, (now - start) / dur);
           const eased = 1 - Math.pow(1 - p, 3);
-          el.textContent = Math.round(to * eased).toLocaleString("en-US") + "+";
+          el.textContent = Math.round(to * eased).toLocaleString(locale) + suffix;
           if (p < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);

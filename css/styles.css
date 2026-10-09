@@ -990,6 +990,171 @@ a.service-card { color: inherit; text-decoration: none; }
   .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
 }
 
+/* Scientific publications (Scholar) */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.is-publications .pub-hero .lead { max-width: 40rem; }
+.pub-stats {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--teal-dark);
+  margin-top: 14px;
+  line-height: 1.6;
+}
+.pub-meta { font-size: 13px; color: var(--muted); margin-top: 10px; }
+.pub-meta-sep { opacity: .6; }
+.pub-hub { padding-top: 4px; }
+.pub-toolbar {
+  position: sticky;
+  top: var(--header);
+  z-index: 20;
+  background: var(--bg);
+  padding: 12px 0 16px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.pub-search {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  background: var(--surface);
+  margin-bottom: 12px;
+}
+.pub-search:focus { outline: 2px solid var(--teal); border-color: transparent; }
+.pub-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.pub-select {
+  flex: 1 1 140px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  background: var(--surface);
+}
+.pub-count { font-size: 13px; color: var(--muted); margin: 4px 0 0; min-height: 1.4em; }
+.pub-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.pub-grid[data-loading="true"] { opacity: .55; pointer-events: none; }
+.pub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.pub-card:hover {
+  border-color: #c5dbe3;
+  box-shadow: var(--shadow);
+}
+.pub-card__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.pub-card__topic {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--teal-soft);
+  color: var(--teal-dark);
+}
+.pub-card__year {
+  margin-inline-start: auto;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.pub-card__title {
+  font-size: 1.05rem;
+  line-height: 1.45;
+  margin: 0;
+  text-align: left;
+  direction: ltr;
+}
+.pub-card__authors,
+.pub-card__journal {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: left;
+  direction: ltr;
+}
+.pub-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.pub-card__arrow { color: var(--teal); font-size: 1.1rem; }
+.pub-empty,
+.pub-error {
+  text-align: center;
+  color: var(--muted);
+  padding: 28px 12px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+}
+.pub-card--skeleton { pointer-events: none; min-height: 160px; }
+.pub-skel {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eef4f6 25%, #e2ecef 50%, #eef4f6 75%);
+  background-size: 200% 100%;
+  animation: pub-shimmer 1.2s ease infinite;
+}
+.pub-skel-topic { width: 72px; height: 22px; margin-bottom: 8px; }
+.pub-skel-title { width: 92%; height: 16px; margin-bottom: 10px; }
+.pub-skel-line { width: 80%; margin-bottom: 6px; }
+.pub-skel-line.short { width: 55%; }
+@keyframes pub-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.stat-pub-link {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+}
+.stat-pub-link:hover b { color: #fff; text-decoration: underline; }
+@media (min-width: 640px) {
+  .pub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+}
+@media (min-width: 1024px) {
+  .pub-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+}
+
 /* Draft review */
 .draft-banner {
   position: sticky;

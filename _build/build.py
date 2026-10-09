@@ -34,6 +34,9 @@ ENDPOINT = "https://n8n.alecasgari.com/webhook/dr-akbari-approval"
 DRAFT_DIR = "پیش-نویس"
 HUB_DIR = "بلاگ"
 HUB_LEGACY = "مقالات"
+PUB_DIR = "مقالات-علمی"
+PUB_DATA = ROOT / PUB_DIR / "data" / "index.json"
+SCHOLAR_URL = "https://scholar.google.com/citations?user=13wD0fwAAAAJ&hl=en"
 DEFAULT_IMAGE = SITE + "/images/hero.webp"
 STATIC_PAGES = [("/", "1.0"), ("/دستورالعمل/", "0.8")]
 
@@ -135,6 +138,17 @@ def page_search_blob(p):
     return " ".join(parts)
 
 
+def load_publications_bundle():
+    if not PUB_DATA.is_file():
+        return None
+    return json.loads(PUB_DATA.read_text(encoding="utf-8"))
+
+
+def publications_live():
+    data = load_publications_bundle()
+    return bool(data and data.get("publications"))
+
+
 def pillar_nav_lines(pages):
     lines = []
     for p in sorted((x for x in pages if x.live and x.type == "pillar"), key=lambda x: x.title):
@@ -152,6 +166,8 @@ def build_nav(current, hub_live, pages):
     if hub_live:
         lines.extend(pillar_nav_lines(pages))
         lines.append(f'        <a href="/{HUB_DIR}/">بلاگ</a>')
+    if publications_live():
+        lines.append(f'        <a href="/{PUB_DIR}/">مقالات علمی</a>')
     lines += [
         '        <a href="/دستورالعمل/">دستورالعمل</a>',
         '        <a href="https://www.instagram.com/dr.naderakbari/" target="_blank" rel="noopener">ویدیو</a>',
@@ -170,7 +186,53 @@ def site_chrome(current, hub_live, pages, tracking=True):
     return (GTM_NOSCRIPT if tracking else "") + header, footer
 
 
+def patch_homepage_publications(hub_live, pages):
+    data = load_publications_bundle()
+    if not data:
+        return
+    total = int(data.get("stats", {}).get("total") or 0)
+    if total <= 0:
+        return
+    f = ROOT / "index.html"
+    raw = f.read_bytes().decode("utf-8")
+    eol = "\r\n" if "\r\n" in raw else "\n"
+    text = raw.replace("\r\n", "\n")
+    stat_pat = re.compile(
+        r'(?:<a class="stat-pub-link" href="/' + PUB_DIR + r'/">\s*)?'
+        r'<div class="stat reveal"><b data-count="\d+"[^>]*>[^<]*</b>'
+        r'<span>مقاله(?: علمی منتشرشده| منتشر شده)</span></div>'
+        r'(?:\s*</a>)?',
+        re.S,
+    )
+    stat_block = (
+        f'<a class="stat-pub-link" href="/{PUB_DIR}/">'
+        f'<div class="stat reveal"><b data-count="{total}" data-count-suffix="" '
+        f'data-count-locale="fa-IR">{fa(total)}</b><span>مقاله علمی منتشرشده</span></div></a>'
+    )
+    if stat_pat.search(text):
+        text = stat_pat.sub(stat_block, text, count=1)
+    scholar = SCHOLAR_URL
+    if '"sameAs"' not in text:
+        text = text.replace(
+            '"medicalSpecialty":["Otolaryngology","Rhinology"],',
+            '"medicalSpecialty":["Otolaryngology","Rhinology"],'
+            f'"sameAs":["{scholar}"],',
+            1,
+        )
+    blocks = [("analytics", ANALYTICS + "\n")]
+    blocks += list(zip(("site-header", "site-footer"), site_chrome("/", hub_live, pages)))
+    for name, block in blocks:
+        pat = re.compile(rf"(  <!-- {name} -->\n).*?(  <!-- /{name} -->\n)", re.S)
+        if pat.search(text):
+            text = pat.sub(lambda m: m.group(1) + block + m.group(2), text, count=1)
+    out = text.replace("\n", eol)
+    if out != raw:
+        f.write_bytes(out.encode("utf-8"))
+        print(f"  updated homepage publications ({total})")
+
+
 def apply_static_chrome(hub_live, pages):
+    patch_homepage_publications(hub_live, pages)
     for rel, current in STATIC_CHROME.items():
         f = ROOT / rel
         raw = f.read_bytes().decode("utf-8")
@@ -549,11 +611,50 @@ def render_hub(pages):
                   f"/{HUB_DIR}/", "is-blog", pages)
 
 
+def render_publications(pages, hub_live):
+    data = load_publications_bundle()
+    stats = data.get("stats", {}) if data else {}
+    url = abs_url(f"/{PUB_DIR}/")
+    page_title = f"مقالات علمی | {DOCTOR}"
+    desc = (
+        "فهرست مقالات علمی دکتر نادر اکبری دیلمقانی در مجلات پژوهشی، "
+        "با آمار استناد از Google Scholar؛ جستجو و فیلتر بر اساس سال و موضوع."
+    )
+    head = "\n".join([
+        f'  <link rel="canonical" href="{url}">',
+        '  <meta name="robots" content="index, follow, max-image-preview:large">',
+        '  <meta property="og:locale" content="fa_IR">',
+        '  <meta property="og:type" content="website">',
+        f'  <meta property="og:title" content="{esc(page_title)}">',
+        f'  <meta property="og:description" content="{esc(desc)}">',
+        f'  <meta property="og:url" content="{url}">',
+        f'  <meta property="og:image" content="{DEFAULT_IMAGE}">',
+    ])
+    schema = json_ld({"@context": "https://schema.org", "@graph": [
+        {"@type": "ProfilePage", "@id": url + "#page", "url": url, "name": "مقالات علمی دکتر نادر اکبری",
+         "description": desc, "inLanguage": "fa-IR", "isPartOf": {"@id": SITE + "/#website"},
+         "mainEntity": {"@id": DOCTOR_ID}},
+        {"@type": "Physician", "@id": DOCTOR_ID, "name": DOCTOR, "url": SITE + "/",
+         "sameAs": [stats.get("scholarUrl") or SCHOLAR_URL]},
+        {"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "خانه", "item": SITE + "/"},
+            {"@type": "ListItem", "position": 2, "name": "مقالات علمی"}]},
+    ]})
+    main = tpl("publications.html")
+    scripts = '  <script src="/js/publications.js" defer></script>\n'
+    return layout(page_title, desc, head, schema, ANALYTICS, main, "", scripts, hub_live,
+                  f"/{PUB_DIR}/", "is-publications", pages)
+
+
 def render_sitemap(pages, hub_live):
     rows = [(path, prio, None) for path, prio in STATIC_PAGES]
     live = [p for p in pages if p.live]
     if hub_live:
         rows.append((f"/{HUB_DIR}/", "0.7", max(p.updated for p in live)))
+    pub = load_publications_bundle()
+    if pub and pub.get("publications"):
+        updated = as_date(pub.get("updated")) or dt.date.today()
+        rows.append((f"/{PUB_DIR}/", "0.75", updated))
     for p in live:
         rows.append((p.path, "0.9" if p.type == "pillar" else "0.7", p.updated))
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
@@ -582,7 +683,10 @@ def build():
     hub_live = any(p.live for p in pages)
     apply_static_chrome(hub_live, pages)
     outputs = {}
+    pub_live = publications_live()
     known = {"/", f"/{HUB_DIR}/"} | {p.path for p in pages if p.live} | {p.draft_path for p in pages if not p.live}
+    if pub_live:
+        known.add(f"/{PUB_DIR}/")
 
     for p in pages:
         if p.live:
@@ -594,6 +698,8 @@ def build():
     if hub_live:
         outputs[f"{HUB_DIR}/index.html"] = render_hub(pages)
         outputs[f"{HUB_LEGACY}/index.html"] = redirect_page(f"/{HUB_DIR}/")
+    if pub_live:
+        outputs[f"{PUB_DIR}/index.html"] = render_publications(pages, hub_live)
     outputs["sitemap.xml"] = render_sitemap(pages, hub_live)
 
     old = json.loads(MANIFEST.read_text(encoding="utf-8")) if MANIFEST.exists() else []

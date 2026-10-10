@@ -13,8 +13,38 @@
   const bodyEl = document.getElementById("vg-modal-body");
   const linksEl = document.getElementById("vg-modal-links");
   const hubPath = "/ویدیو/";
-  let activeId = null;
   let hoverTimer = 0;
+
+  function absUrl(path) {
+    return "https://drnaderakbari.com" + path;
+  }
+
+  function bindShare(root, url, title) {
+    if (!root) return;
+    const text = title + " " + url;
+    const tg = root.querySelector('[data-share="telegram"]');
+    const wa = root.querySelector('[data-share="whatsapp"]');
+    const copy = root.querySelector('[data-share="copy"]');
+    if (tg) tg.href = "https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(title);
+    if (wa) wa.href = "https://wa.me/?text=" + encodeURIComponent(text);
+    if (copy && !copy.dataset.bound) {
+      copy.dataset.bound = "1";
+      copy.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch {
+          const input = document.createElement("input");
+          input.value = url;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand("copy");
+          input.remove();
+        }
+        copy.classList.add("is-copied");
+        setTimeout(() => copy.classList.remove("is-copied"), 1600);
+      });
+    }
+  }
 
   function fillLinks(v) {
     const bits = (v.related || []).map(
@@ -30,11 +60,11 @@
 
   function openModal(v, push) {
     if (!v) return;
-    activeId = v.id;
     kickerEl.textContent = v.kicker || "";
     titleEl.textContent = v.title;
     bodyEl.innerHTML = v.bodyHtml || "";
     fillLinks(v);
+    bindShare(modal.querySelector("[data-vg-share]"), absUrl(v.path), v.title);
     videoEl.poster = v.poster || "";
     if (videoEl.src !== v.src) videoEl.src = v.src;
     modal.hidden = false;
@@ -47,7 +77,6 @@
     videoEl.pause();
     modal.hidden = true;
     document.body.classList.remove("vg-lock");
-    activeId = null;
     if (back && isHub && location.pathname !== hubPath) {
       history.pushState({ vg: null }, "", hubPath);
     }
@@ -110,4 +139,10 @@
       });
     });
   });
+
+  const watchShare = document.querySelector(".vg-watch [data-vg-share]");
+  if (watchShare) {
+    const pageVideo = videos.find((v) => v.path === location.pathname || location.pathname === v.path);
+    if (pageVideo) bindShare(watchShare, absUrl(pageVideo.path), pageVideo.title);
+  }
 })();

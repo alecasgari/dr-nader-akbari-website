@@ -19,6 +19,11 @@ function closeSheets() {
     sheet.classList.remove("is-open");
     sheet.setAttribute("aria-hidden", "true");
   });
+  document.querySelectorAll(".sheet-nav .nav-drop").forEach((drop) => {
+    drop.classList.remove("is-open");
+    const t = drop.querySelector(".nav-drop-toggle");
+    if (t) t.setAttribute("aria-expanded", "false");
+  });
   document.body.style.overflow = "";
 }
 
@@ -31,7 +36,22 @@ document.querySelectorAll("[data-close]").forEach((el) => {
 });
 
 document.querySelectorAll(".sheet-nav a").forEach((el) => {
-  el.addEventListener("click", () => {
+  el.addEventListener("click", (e) => {
+    if (el.classList.contains("nav-drop-toggle")) {
+      e.preventDefault();
+      const drop = el.closest(".nav-drop");
+      const open = !drop.classList.contains("is-open");
+      document.querySelectorAll(".sheet-nav .nav-drop.is-open").forEach((d) => {
+        if (d !== drop) {
+          d.classList.remove("is-open");
+          const t = d.querySelector(".nav-drop-toggle");
+          if (t) t.setAttribute("aria-expanded", "false");
+        }
+      });
+      drop.classList.toggle("is-open", open);
+      el.setAttribute("aria-expanded", open ? "true" : "false");
+      return;
+    }
     const href = el.getAttribute("href") || "";
     if (href.startsWith("#") || href.includes("#")) {
       closeSheets();

@@ -40,6 +40,18 @@ SCHOLAR_URL = "https://scholar.google.com/citations?user=13wD0fwAAAAJ&hl=en"
 DEFAULT_IMAGE = SITE + "/images/hero.webp"
 VIDEO_DIR = "ویدیو"
 VIDEOS_DATA = CONTENT / "videos.yaml"
+VIDEO_OG = "/images/videos/og.jpg"
+VIDEO_SHARE = (
+    '            <div class="vg-share" data-vg-share>\n'
+    '              <span class="vg-share-label">اشتراک‌گذاری</span>\n'
+    '              <a class="vg-share-btn" data-share="telegram" target="_blank" rel="noopener" aria-label="تلگرام">'
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.5 3.6 18.9 20c-.2 1-1.2 1.4-2 .9l-5.3-4-2.6 2.5c-.3.3-.8.1-.9-.3L7 14.2 3.2 13c-1-.3-1-1.7.1-2l17.3-8.1c.9-.4 1.8.4 1.4 1.7zM9.7 13.7l.6 4.6 1.4-2.7 7.2-6.5-9.2 4.6z"/></svg></a>\n'
+    '              <a class="vg-share-btn" data-share="whatsapp" target="_blank" rel="noopener" aria-label="واتساپ">'
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.04 2C6.58 2 2.15 6.4 2.15 11.84c0 1.74.46 3.44 1.33 4.94L2 22l5.37-1.4a10 10 0 0 0 4.67 1.15h.01c5.46 0 9.89-4.4 9.89-9.85C21.94 6.4 17.5 2 12.04 2m5.76 14.08c-.24.68-1.4 1.26-1.94 1.3-.5.04-1.13.06-1.82-.11-.42-.11-.96-.31-1.66-.61-2.92-1.26-4.82-4.2-4.97-4.4-.14-.19-1.18-1.57-1.18-3 0-1.41.74-2.11 1-2.4.24-.27.64-.39 1.02-.39h.73c.23 0 .55-.09.86.66.33.79 1.11 2.72 1.21 2.92.1.19.16.42.03.68-.13.27-.2.43-.4.66-.19.23-.42.51-.6.69-.19.19-.38.39-.16.76.22.37 1 1.64 2.14 2.66 1.47 1.31 2.71 1.72 3.1 1.91.38.19.61.16.84-.1.22-.25.97-1.13 1.23-1.52.26-.38.52-.32.88-.19.36.13 2.32 1.09 2.72 1.29.4.2.66.3.76.47.09.16.09.95-.15 1.63z"/></svg></a>\n'
+    '              <button type="button" class="vg-share-btn" data-share="copy" aria-label="کپی لینک">'
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M9 9h9v11H9z"/><path fill="none" stroke="currentColor" stroke-width="2" d="M6 15H5V4h9v1"/></svg></button>\n'
+    '            </div>\n'
+)
 STATIC_PAGES = [("/", "1.0"), ("/دستورالعمل/", "0.8")]
 
 FA_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
@@ -251,39 +263,103 @@ def render_video_pages(pages, hub_live):
     scripts = '  <script src="/js/videos.js" defer></script>\n'
     hub_path = f"/{VIDEO_DIR}/"
     hub_title = f"ویدیوهای آموزشی بینی و سینوس | {DOCTOR}"
-    hub_desc = ("ویدیوهای آموزشی دکتر نادر اکبری دیلمقانی درباره نشت مایع مغزی نخاعی، "
-                "سینوزیت، پولیپ بینی، درد گوش و جراحی آندوسکوپی قاعده جمجمه.")
+    hub_desc = ("ویدیو آموزشی سینوزیت، پولیپ بینی، نشت مایع مغزی نخاعی، درد گوش و "
+                "جراحی آندوسکوپی سینوس با توضیح فارسی برای پرسش‌های رایج گوگل.")
+    hub_lead = ("فیلم‌های کوتاه آموزشی درباره بینی، سینوس و قاعده جمجمه. هر ویدیو را "
+                "بزنید تا با توضیح علائم، تشخیص و درمان باز شود.")
     hub_crumbs = "\n".join([
         '            <li><a href="/">خانه</a></li>',
         '            <li aria-current="page">ویدیو</li>',
     ])
+    og = SITE + VIDEO_OG
     list_items = [{"@type": "ListItem", "position": i + 1,
                    "url": abs_url(f"/{VIDEO_DIR}/{v['slug']}/"), "name": v["title"]}
                   for i, v in enumerate(videos)]
+    hub_faqs = [
+        {"q": "ویدیوهای آموزشی بینی و سینوس را از کجا ببینم؟",
+         "a": "آرشیو ویدیوهای آموزشی دکتر نادر اکبری در صفحه ویدیو سایت است؛ پخش از سرور خود مطب انجام می‌شود و وابسته به اینستاگرام نیست."},
+        {"q": "آبریزش شفاف یک‌طرفه بینی خطرناک است؟",
+         "a": "آبریزش زلال یک‌طرفه، به‌ویژه با خم شدن سر، می‌تواند نشت مایع مغزی نخاعی باشد نه فقط آلرژی. تشخیص دیرهنگام خطر مننژیت دارد و باید توسط فلوشیپ راینولوژی بررسی شود."},
+        {"q": "پولیپ بینی با انحراف تیغه چه فرقی دارد؟",
+         "a": "پولیپ بینی بافت ملتهب نرم و معمولاً دوطرفه است و بویایی را کم می‌کند؛ انحراف تیغه مشکل استخوانی یک‌طرفه است. درمان پولیپوز اغلب دارویی و در موارد انسدادی جراحی آندوسکوپی سینوس است."},
+        {"q": "سردرد پیشانی همان میگرن است یا سینوزیت فرونتال؟",
+         "a": "اگر درد بالای چشم با گرفتگی بینی، ترشح پشت حلق یا فشار هنگام خم شدن همراه باشد، سینوزیت فرونتال محتمل‌تر از میگرن خالص است و تصویربرداری و آندوسکوپی کمک می‌کند."},
+    ]
+    faq_html = "\n".join(
+        f'          <details class="acc-item"><summary>{esc(x["q"])}</summary>'
+        f'<div class="acc-body"><p>{esc(x["a"])}</p></div></details>'
+        for x in hub_faqs
+    )
+    below = (
+        '    <section class="article-section vg-guide">\n'
+        '      <div class="wrap">\n'
+        '        <h2>ویدیو آموزشی برای پرسش‌های رایج بیماران</h2>\n'
+        '        <p class="lead">این صفحه برای کسانی است که در گوگل «نشت مایع مغزی از بینی»، «پولیپ بینی»، '
+        '«سینوزیت فرونتال»، «علت درد گوش» یا «جراحی آندوسکوپی سینوس» را جستجو می‌کنند و می‌خواهند توضیح '
+        'کوتاه متخصص را ببینند، بعد متن کامل همان موضوع را بخوانند.</p>\n'
+        '        <p>پخش فیلم‌ها روی دامنه خود سایت است. زیر هر ویدیو متن بازنویسی‌شده برای همان کوئری آمده '
+        'و به صفحات راهنما لینک می‌شود: '
+        '<a href="/جراحی-آندوسکوپی-سینوس/">جراحی آندوسکوپی سینوس</a>، '
+        '<a href="/پولیپ-بینی/">پولیپ بینی</a>، '
+        '<a href="/سینوزیت-مزمن/">سینوزیت مزمن</a> و '
+        '<a href="/شستشوی-بینی-با-سرم/">شستشوی بینی با سرم</a>.</p>\n'
+        '        <div class="faq-block">\n'
+        '          <h2 id="faq">پرسش‌های رایج درباره این ویدیوها</h2>\n'
+        f'          <div class="accordion">\n{faq_html}\n          </div>\n'
+        '        </div>\n'
+        '      </div>\n'
+        '    </section>\n'
+    )
     hub_head = "\n".join([
         f'  <link rel="canonical" href="{abs_url(hub_path)}">',
-        '  <meta name="robots" content="index, follow, max-image-preview:large">',
+        '  <meta name="robots" content="index, follow, max-image-preview:large, max-video-preview:-1">',
         '  <meta property="og:locale" content="fa_IR">',
         '  <meta property="og:type" content="website">',
         '  <meta property="og:site_name" content="دکتر نادر اکبری">',
         f'  <meta property="og:title" content="{esc(hub_title)}">',
         f'  <meta property="og:description" content="{esc(hub_desc)}">',
         f'  <meta property="og:url" content="{abs_url(hub_path)}">',
-        f'  <meta property="og:image" content="{SITE}{videos[0]["poster"]}">',
+        f'  <meta property="og:image" content="{esc(og)}">',
+        '  <meta property="og:image:width" content="1200">',
+        '  <meta property="og:image:height" content="630">',
+        '  <meta property="og:image:alt" content="ویدیوهای آموزشی بینی و سینوس دکتر نادر اکبری">',
+        '  <meta name="twitter:card" content="summary_large_image">',
+        f'  <meta name="twitter:title" content="{esc(hub_title)}">',
+        f'  <meta name="twitter:description" content="{esc(hub_desc)}">',
+        f'  <meta name="twitter:image" content="{esc(og)}">',
     ])
+    video_list = []
+    for i, v in enumerate(videos):
+        video_list.append({
+            "@type": "VideoObject", "position": i + 1, "name": v["title"],
+            "description": v.get("description") or v["title"],
+            "thumbnailUrl": SITE + v["poster"], "contentUrl": v["src"],
+            "url": abs_url(f"/{VIDEO_DIR}/{v['slug']}/"),
+            "uploadDate": str(v.get("date") or "2026-10-10"),
+            "duration": iso_duration(v.get("duration")), "inLanguage": "fa",
+        })
     hub_schema = json_ld({"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "@id": abs_url(hub_path) + "#page", "url": abs_url(hub_path),
-         "name": "ویدیوهای آموزشی دکتر نادر اکبری", "description": hub_desc,
+         "name": "ویدیوهای آموزشی بینی و سینوس", "description": hub_desc,
          "inLanguage": "fa-IR", "isPartOf": {"@id": SITE + "/#website"},
+         "primaryImageOfPage": {"@type": "ImageObject", "url": og, "width": 1200, "height": 630},
+         "about": [{"@type": "MedicalCondition", "name": n} for n in
+                   ["نشت مایع مغزی نخاعی", "پولیپ بینی", "سینوزیت", "درد گوش"]],
          "mainEntity": {"@type": "ItemList", "numberOfItems": len(videos),
                         "itemListElement": list_items}},
+        {"@type": "ItemList", "@id": abs_url(hub_path) + "#videos",
+         "itemListElement": video_list},
+        {"@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": x["q"],
+             "acceptedAnswer": {"@type": "Answer", "text": x["a"]}} for x in hub_faqs]},
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "خانه", "item": SITE + "/"},
             {"@type": "ListItem", "position": 2, "name": "ویدیو"}]},
+        {"@type": ["Physician", "Person"], "@id": DOCTOR_ID, "name": DOCTOR, "url": SITE + "/"},
     ]})
     hub_main = fill(tpl("videos.html"), breadcrumb=hub_crumbs, kicker="آرشیو ویدیو",
-                    h1="ویدیوهای آموزشی بینی، سینوس و قاعده جمجمه", lead=hub_desc,
-                    watch="", count=fa(len(videos)), filters=filters, grid=grid,
+                    h1="ویدیوهای آموزشی بینی، سینوس و قاعده جمجمه", lead=hub_lead,
+                    watch="", below=below, count=fa(len(videos)), filters=filters, grid=grid,
                     videos_json=payload_json)
     out = {f"{VIDEO_DIR}/index.html": layout(
         hub_title, hub_desc, hub_head, hub_schema, ANALYTICS, hub_main, "", scripts,
@@ -310,6 +386,8 @@ def render_video_pages(pages, hub_live):
             f'src="{esc(v["src"])}" title="{esc(v["title"])}"></video>\n'
             '      </div>\n'
             '      <div class="vg-watch-copy">\n'
+            + VIDEO_SHARE +
+            f'            <p class="kicker">{esc(v.get("kicker") or "")}</p>\n'
             f'        <div class="vg-watch-body">{body_html}</div>\n'
             '        <div class="vg-watch-links">\n' + "\n".join(links) + "\n        </div>\n"
             "      </div>\n    </section>\n"
@@ -319,44 +397,57 @@ def render_video_pages(pages, hub_live):
             f'            <li><a href="{hub_path}">ویدیو</a></li>',
             f'            <li aria-current="page">{esc(v["title"])}</li>',
         ])
+        transcript = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body_html)).strip()
         head = "\n".join([
             f'  <link rel="canonical" href="{url}">',
-            '  <meta name="robots" content="index, follow, max-image-preview:large">',
+            '  <meta name="robots" content="index, follow, max-image-preview:large, max-video-preview:-1">',
             '  <meta property="og:locale" content="fa_IR">',
             '  <meta property="og:type" content="video.other">',
             '  <meta property="og:site_name" content="دکتر نادر اکبری">',
             f'  <meta property="og:title" content="{esc(v["title"])}">',
             f'  <meta property="og:description" content="{esc(desc)}">',
             f'  <meta property="og:url" content="{url}">',
-            f'  <meta property="og:image" content="{esc(poster)}">',
+            f'  <meta property="og:image" content="{esc(og)}">',
+            '  <meta property="og:image:width" content="1200">',
+            '  <meta property="og:image:height" content="630">',
             f'  <meta property="og:video" content="{esc(v["src"])}">',
+            '  <meta property="og:video:type" content="video/mp4">',
             '  <meta name="twitter:card" content="summary_large_image">',
+            f'  <meta name="twitter:title" content="{esc(v["title"])}">',
+            f'  <meta name="twitter:description" content="{esc(desc)}">',
+            f'  <meta name="twitter:image" content="{esc(og)}">',
         ])
         video_obj = {
             "@type": "VideoObject",
             "@id": url + "#video",
             "name": v["title"],
             "description": desc,
-            "thumbnailUrl": poster,
+            "thumbnailUrl": [poster, og],
             "contentUrl": v["src"],
             "embedUrl": url,
             "uploadDate": str(v.get("date") or "2026-10-10"),
             "duration": iso_duration(v.get("duration")),
             "inLanguage": "fa",
+            "transcript": transcript[:5000],
             "author": {"@id": DOCTOR_ID},
+            "publisher": {"@id": DOCTOR_ID},
+            "isFamilyFriendly": True,
         }
         schema = json_ld({"@context": "https://schema.org", "@graph": [
             {"@type": "WebPage", "@id": url + "#page", "url": url, "name": v["title"],
-             "description": desc, "inLanguage": "fa-IR", "primaryImageOfPage": poster,
-             "mainEntity": {"@id": url + "#video"}, "isPartOf": {"@id": SITE + "/#website"}},
+             "description": desc, "inLanguage": "fa-IR",
+             "primaryImageOfPage": {"@type": "ImageObject", "url": og, "width": 1200, "height": 630},
+             "mainEntity": {"@id": url + "#video"}, "isPartOf": {"@id": SITE + "/#website"},
+             "breadcrumb": {"@id": url + "#breadcrumb"}},
             video_obj,
-            {"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "BreadcrumbList", "@id": url + "#breadcrumb", "itemListElement": [
                 {"@type": "ListItem", "position": 1, "name": "خانه", "item": SITE + "/"},
                 {"@type": "ListItem", "position": 2, "name": "ویدیو", "item": abs_url(hub_path)},
                 {"@type": "ListItem", "position": 3, "name": v["title"]}]},
+            {"@type": ["Physician", "Person"], "@id": DOCTOR_ID, "name": DOCTOR, "url": SITE + "/"},
         ]})
         main = fill(tpl("videos.html"), breadcrumb=crumbs, kicker="ویدیوی آموزشی",
-                    h1=esc(v["title"]), lead=esc(desc), watch=watch,
+                    h1=esc(v["title"]), lead=esc(desc), watch=watch, below="",
                     count=fa(len(videos)), filters=filters, grid=grid,
                     videos_json=payload_json)
         out[f"{VIDEO_DIR}/{v['slug']}/index.html"] = layout(
@@ -374,7 +465,7 @@ def services_nav(pages):
     inner = "\n".join(items)
     return (
         '        <div class="nav-drop">\n'
-        '          <a href="/#services" class="nav-drop-toggle">خدمات</a>\n'
+        '          <a href="/#services" class="nav-drop-toggle" aria-expanded="false">خدمات</a>\n'
         f'          <div class="nav-drop-menu">\n{inner}\n          </div>\n'
         '        </div>'
     )

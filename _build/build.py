@@ -149,22 +149,28 @@ def publications_live():
     return bool(data and data.get("publications"))
 
 
-def pillar_nav_lines(pages):
-    lines = []
-    for p in sorted((x for x in pages if x.live and x.type == "pillar"), key=lambda x: x.title):
+def services_nav(pages):
+    pillars = sorted((x for x in pages if x.live and x.type == "pillar"), key=lambda x: x.title)
+    items = ['          <a href="/#services">نمای کلی خدمات</a>']
+    for p in pillars:
         label = str(p.meta.get("nav_title") or p.title).strip()
-        lines.append(f'        <a href="{p.path}">{esc(label)}</a>')
-    return lines
+        items.append(f'          <a href="{p.path}">{esc(label)}</a>')
+    inner = "\n".join(items)
+    return (
+        '        <div class="nav-drop">\n'
+        '          <a href="/#services" class="nav-drop-toggle">خدمات</a>\n'
+        f'          <div class="nav-drop-menu">\n{inner}\n          </div>\n'
+        '        </div>'
+    )
 
 
 def build_nav(current, hub_live, pages):
     lines = [
         '        <a href="/">خانه</a>',
         '        <a href="/#about">درباره</a>',
-        '        <a href="/#services">خدمات</a>',
+        services_nav(pages),
     ]
     if hub_live:
-        lines.extend(pillar_nav_lines(pages))
         lines.append(f'        <a href="/{HUB_DIR}/">بلاگ</a>')
     if publications_live():
         lines.append(f'        <a href="/{PUB_DIR}/">مقالات علمی</a>')

@@ -38,6 +38,8 @@ PUB_DIR = "مقالات-علمی"
 PUB_DATA = ROOT / PUB_DIR / "data" / "index.json"
 SCHOLAR_URL = "https://scholar.google.com/citations?user=13wD0fwAAAAJ&hl=en"
 DEFAULT_IMAGE = SITE + "/images/hero.webp"
+VIDEO_DIR = "ویدیو"
+VIDEOS_DATA = CONTENT / "videos.yaml"
 STATIC_PAGES = [("/", "1.0"), ("/دستورالعمل/", "0.8")]
 
 FA_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
@@ -149,6 +151,220 @@ def publications_live():
     return bool(data and data.get("publications"))
 
 
+def load_videos():
+    if not VIDEOS_DATA.is_file():
+        return []
+    return yaml.safe_load(VIDEOS_DATA.read_text(encoding="utf-8")) or []
+
+
+def iso_duration(seconds):
+    seconds = int(seconds or 0)
+    h, rem = divmod(seconds, 3600)
+    m, s = divmod(rem, 60)
+    if h:
+        return f"PT{h}H{m}M{s}S"
+    if m:
+        return f"PT{m}M{s}S"
+    return f"PT{s}S"
+
+
+def clock_label(seconds):
+    seconds = int(seconds or 0)
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    if h:
+        return f"{fa(h)}:{fa(f'{m:02d}')}:{fa(f'{s:02d}')}"
+    return f"{fa(m)}:{fa(f'{s:02d}')}"
+
+
+def video_related(v, pages):
+    by_slug = {p.slug: p for p in pages if p.live}
+    items = []
+    for slug in v.get("related") or []:
+        p = by_slug.get(slug)
+        if p:
+            items.append({"href": p.path, "title": str(p.meta.get("nav_title") or p.title)})
+    return items
+
+
+def video_payload(videos, pages):
+    out = []
+    for v in videos:
+        body_html = markdown.markdown(v.get("body") or "", extensions=["extra", "sane_lists"])
+        out.append({
+            "id": v["id"],
+            "slug": v["slug"],
+            "path": f"/{VIDEO_DIR}/{v['slug']}/",
+            "kicker": v.get("kicker") or "",
+            "title": v["title"],
+            "description": v.get("description") or "",
+            "src": v["src"],
+            "poster": v["poster"],
+            "instagram": v.get("instagram") or "",
+            "duration": int(v.get("duration") or 0),
+            "related": video_related(v, pages),
+            "bodyHtml": body_html,
+        })
+    return out
+
+
+def video_tile(v):
+    title = esc(v["title"])
+    poster = esc(v["poster"])
+    href = f"/{VIDEO_DIR}/{v['slug']}/"
+    return (
+        f'          <a class="vg-tile" href="{href}" data-id="{esc(v["id"])}" '
+        f'data-src="{esc(v["src"])}" data-kicker="{esc(v.get("kicker") or "")}">\n'
+        f'            <span class="vg-tile-media">\n'
+        f'              <img src="{poster}" width="{int(v.get("poster_w") or 720)}" '
+        f'height="{int(v.get("poster_h") or 1280)}" alt="{title}" loading="lazy" decoding="async">\n'
+        f'              <video muted loop playsinline preload="none"></video>\n'
+        f'            </span>\n'
+        f'            <span class="vg-tile-play" aria-hidden="true"></span>\n'
+        f'            <span class="vg-tile-time">{clock_label(v.get("duration"))}</span>\n'
+        f'            <span class="vg-tile-cap"><b>{esc(v.get("kicker") or "")}</b>'
+        f'<strong>{title}</strong></span>\n'
+        f'          </a>'
+    )
+
+
+def video_filters(videos):
+    cats = []
+    for v in videos:
+        k = (v.get("kicker") or "").strip()
+        if k and k not in cats:
+            cats.append(k)
+    buttons = ['            <button type="button" class="is-active" data-filter="all">همه</button>']
+    for c in cats:
+        buttons.append(f'            <button type="button" data-filter="{esc(c)}">{esc(c)}</button>')
+    return "\n".join(buttons)
+
+
+def render_video_pages(pages, hub_live):
+    videos = load_videos()
+    if not videos:
+        return {}
+    payload = video_payload(videos, pages)
+    payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    grid = "\n".join(video_tile(v) for v in videos)
+    filters = video_filters(videos)
+    scripts = '  <script src="/js/videos.js" defer></script>\n'
+    hub_path = f"/{VIDEO_DIR}/"
+    hub_title = f"ویدیوهای آموزشی بینی و سینوس | {DOCTOR}"
+    hub_desc = ("ویدیوهای آموزشی دکتر نادر اکبری دیلمقانی درباره نشت مایع مغزی نخاعی، "
+                "سینوزیت، پولیپ بینی، درد گوش و جراحی آندوسکوپی قاعده جمجمه.")
+    hub_crumbs = "\n".join([
+        '            <li><a href="/">خانه</a></li>',
+        '            <li aria-current="page">ویدیو</li>',
+    ])
+    list_items = [{"@type": "ListItem", "position": i + 1,
+                   "url": abs_url(f"/{VIDEO_DIR}/{v['slug']}/"), "name": v["title"]}
+                  for i, v in enumerate(videos)]
+    hub_head = "\n".join([
+        f'  <link rel="canonical" href="{abs_url(hub_path)}">',
+        '  <meta name="robots" content="index, follow, max-image-preview:large">',
+        '  <meta property="og:locale" content="fa_IR">',
+        '  <meta property="og:type" content="website">',
+        '  <meta property="og:site_name" content="دکتر نادر اکبری">',
+        f'  <meta property="og:title" content="{esc(hub_title)}">',
+        f'  <meta property="og:description" content="{esc(hub_desc)}">',
+        f'  <meta property="og:url" content="{abs_url(hub_path)}">',
+        f'  <meta property="og:image" content="{SITE}{videos[0]["poster"]}">',
+    ])
+    hub_schema = json_ld({"@context": "https://schema.org", "@graph": [
+        {"@type": "CollectionPage", "@id": abs_url(hub_path) + "#page", "url": abs_url(hub_path),
+         "name": "ویدیوهای آموزشی دکتر نادر اکبری", "description": hub_desc,
+         "inLanguage": "fa-IR", "isPartOf": {"@id": SITE + "/#website"},
+         "mainEntity": {"@type": "ItemList", "numberOfItems": len(videos),
+                        "itemListElement": list_items}},
+        {"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "خانه", "item": SITE + "/"},
+            {"@type": "ListItem", "position": 2, "name": "ویدیو"}]},
+    ]})
+    hub_main = fill(tpl("videos.html"), breadcrumb=hub_crumbs, kicker="آرشیو ویدیو",
+                    h1="ویدیوهای آموزشی بینی، سینوس و قاعده جمجمه", lead=hub_desc,
+                    watch="", count=fa(len(videos)), filters=filters, grid=grid,
+                    videos_json=payload_json)
+    out = {f"{VIDEO_DIR}/index.html": layout(
+        hub_title, hub_desc, hub_head, hub_schema, ANALYTICS, hub_main, "", scripts,
+        hub_live, hub_path, "is-videos is-videos-hub", pages)}
+
+    by_id = {p["id"]: p for p in payload}
+    for v in videos:
+        path = f"/{VIDEO_DIR}/{v['slug']}/"
+        url = abs_url(path)
+        poster = SITE + v["poster"]
+        title = f"{v['title']} | {DOCTOR}"
+        desc = v.get("description") or v["title"]
+        body_html = by_id[v["id"]]["bodyHtml"]
+        rel = by_id[v["id"]]["related"]
+        links = []
+        for r in rel:
+            links.append(f'            <a href="{esc(r["href"])}">{esc(r["title"])}</a>')
+        if v.get("instagram"):
+            links.append(f'            <a href="{esc(v["instagram"])}" target="_blank" rel="noopener">پست اینستاگرام</a>')
+        watch = (
+            '    <section class="vg-watch wrap">\n'
+            '      <div class="vg-watch-player">\n'
+            f'        <video controls playsinline controlslist="nodownload" poster="{esc(v["poster"])}" '
+            f'src="{esc(v["src"])}" title="{esc(v["title"])}"></video>\n'
+            '      </div>\n'
+            '      <div class="vg-watch-copy">\n'
+            f'        <div class="vg-watch-body">{body_html}</div>\n'
+            '        <div class="vg-watch-links">\n' + "\n".join(links) + "\n        </div>\n"
+            "      </div>\n    </section>\n"
+        )
+        crumbs = "\n".join([
+            '            <li><a href="/">خانه</a></li>',
+            f'            <li><a href="{hub_path}">ویدیو</a></li>',
+            f'            <li aria-current="page">{esc(v["title"])}</li>',
+        ])
+        head = "\n".join([
+            f'  <link rel="canonical" href="{url}">',
+            '  <meta name="robots" content="index, follow, max-image-preview:large">',
+            '  <meta property="og:locale" content="fa_IR">',
+            '  <meta property="og:type" content="video.other">',
+            '  <meta property="og:site_name" content="دکتر نادر اکبری">',
+            f'  <meta property="og:title" content="{esc(v["title"])}">',
+            f'  <meta property="og:description" content="{esc(desc)}">',
+            f'  <meta property="og:url" content="{url}">',
+            f'  <meta property="og:image" content="{esc(poster)}">',
+            f'  <meta property="og:video" content="{esc(v["src"])}">',
+            '  <meta name="twitter:card" content="summary_large_image">',
+        ])
+        video_obj = {
+            "@type": "VideoObject",
+            "@id": url + "#video",
+            "name": v["title"],
+            "description": desc,
+            "thumbnailUrl": poster,
+            "contentUrl": v["src"],
+            "embedUrl": url,
+            "uploadDate": str(v.get("date") or "2026-10-10"),
+            "duration": iso_duration(v.get("duration")),
+            "inLanguage": "fa",
+            "author": {"@id": DOCTOR_ID},
+        }
+        schema = json_ld({"@context": "https://schema.org", "@graph": [
+            {"@type": "WebPage", "@id": url + "#page", "url": url, "name": v["title"],
+             "description": desc, "inLanguage": "fa-IR", "primaryImageOfPage": poster,
+             "mainEntity": {"@id": url + "#video"}, "isPartOf": {"@id": SITE + "/#website"}},
+            video_obj,
+            {"@type": "BreadcrumbList", "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "خانه", "item": SITE + "/"},
+                {"@type": "ListItem", "position": 2, "name": "ویدیو", "item": abs_url(hub_path)},
+                {"@type": "ListItem", "position": 3, "name": v["title"]}]},
+        ]})
+        main = fill(tpl("videos.html"), breadcrumb=crumbs, kicker="ویدیوی آموزشی",
+                    h1=esc(v["title"]), lead=esc(desc), watch=watch,
+                    count=fa(len(videos)), filters=filters, grid=grid,
+                    videos_json=payload_json)
+        out[f"{VIDEO_DIR}/{v['slug']}/index.html"] = layout(
+            title, desc, head, schema, ANALYTICS, main, "", scripts,
+            hub_live, path, "is-videos", pages)
+    return out
+
+
 def services_nav(pages):
     pillars = sorted((x for x in pages if x.live and x.type == "pillar"), key=lambda x: x.title)
     items = ['          <a href="/#services">نمای کلی خدمات</a>']
@@ -176,12 +392,15 @@ def build_nav(current, hub_live, pages):
         lines.append(f'        <a href="/{PUB_DIR}/">مقالات علمی</a>')
     lines += [
         '        <a href="/دستورالعمل/">دستورالعمل</a>',
-        '        <a href="https://www.instagram.com/dr.naderakbari/" target="_blank" rel="noopener">ویدیو</a>',
+        f'        <a href="/{VIDEO_DIR}/">ویدیو</a>',
         '        <a href="/#contact">تماس</a>',
     ]
     nav = "\n".join(lines)
     if current:
-        nav = nav.replace(f'href="{current}">', f'href="{current}" aria-current="page">', 1)
+        if current.rstrip("/").startswith("/" + VIDEO_DIR):
+            nav = nav.replace(f'href="/{VIDEO_DIR}/">', f'href="/{VIDEO_DIR}/" aria-current="page">', 1)
+        else:
+            nav = nav.replace(f'href="{current}">', f'href="{current}" aria-current="page">', 1)
     return nav
 
 
@@ -692,6 +911,13 @@ def render_sitemap(pages, hub_live):
     if pub and pub.get("publications"):
         updated = as_date(pub.get("updated")) or dt.date.today()
         rows.append((f"/{PUB_DIR}/", "0.75", updated))
+    vids = load_videos()
+    if vids:
+        dates = [as_date(v.get("date")) for v in vids]
+        dates = [d for d in dates if d]
+        rows.append((f"/{VIDEO_DIR}/", "0.8", max(dates) if dates else dt.date.today()))
+        for v in vids:
+            rows.append((f"/{VIDEO_DIR}/{v['slug']}/", "0.65", as_date(v.get("date"))))
     for p in live:
         rows.append((p.path, "0.9" if p.type == "pillar" else "0.7", p.updated))
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
@@ -724,6 +950,10 @@ def build():
     known = {"/", f"/{HUB_DIR}/"} | {p.path for p in pages if p.live} | {p.draft_path for p in pages if not p.live}
     if pub_live:
         known.add(f"/{PUB_DIR}/")
+    videos = load_videos()
+    if videos:
+        known.add(f"/{VIDEO_DIR}/")
+        known.update(f"/{VIDEO_DIR}/{v['slug']}/" for v in videos)
 
     for p in pages:
         if p.live:
@@ -737,6 +967,7 @@ def build():
         outputs[f"{HUB_LEGACY}/index.html"] = redirect_page(f"/{HUB_DIR}/")
     if pub_live:
         outputs[f"{PUB_DIR}/index.html"] = render_publications(pages, hub_live)
+    outputs.update(render_video_pages(pages, hub_live))
     outputs["sitemap.xml"] = render_sitemap(pages, hub_live)
 
     old = json.loads(MANIFEST.read_text(encoding="utf-8")) if MANIFEST.exists() else []

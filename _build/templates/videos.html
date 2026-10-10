@@ -1,0 +1,46 @@
+    <section class="vg-hero">
+      <div class="wrap">
+        <nav class="breadcrumb" aria-label="مسیر صفحه">
+          <ol>
+{{breadcrumb}}
+          </ol>
+        </nav>
+        <p class="kicker">{{kicker}}</p>
+        <h1>{{h1}}</h1>
+        <p class="lead">{{lead}}</p>
+      </div>
+    </section>
+
+{{watch}}
+    <section class="vg-stage" aria-label="ویدیوهای آموزشی">
+      <div class="wrap">
+        <div class="vg-toolbar">
+          <p class="vg-count">{{count}} ویدیو</p>
+          <div class="vg-filters" role="group" aria-label="موضوع ویدیو">
+{{filters}}
+          </div>
+        </div>
+        <div class="vg-grid" id="vg-grid">
+{{grid}}
+        </div>
+      </div>
+    </section>
+
+    <div class="vg-modal" id="vg-modal" hidden>
+      <button type="button" class="vg-modal-backdrop" data-vg-close aria-label="بستن"></button>
+      <div class="vg-modal-panel" role="dialog" aria-modal="true" aria-labelledby="vg-modal-title">
+        <button type="button" class="vg-modal-close" data-vg-close aria-label="بستن">×</button>
+        <div class="vg-modal-layout">
+          <div class="vg-modal-player">
+            <video id="vg-modal-video" controls playsinline controlslist="nodownload"></video>
+          </div>
+          <div class="vg-modal-copy">
+            <p class="vg-modal-kicker" id="vg-modal-kicker"></p>
+            <h2 id="vg-modal-title"></h2>
+            <div class="vg-modal-body" id="vg-modal-body"></div>
+            <div class="vg-modal-links" id="vg-modal-links"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="application/json" id="vg-data">{{videos_json}}</script>

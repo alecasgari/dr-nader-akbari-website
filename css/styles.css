@@ -1502,6 +1502,58 @@ body.pub-modal-open { overflow: hidden; }
 .modal h2 { padding-inline-end: 40px; }
 .modal .review-done h2 { padding-inline: 0; }
 .modal .review-done p { text-align: center; text-align-last: center; }
+.wa-lead .review-panel { padding: 18px 16px 14px; }
+.wa-lead h2 { font-size: 1.05rem; margin: 0 0 8px; }
+.wa-form { display: grid; gap: 2px; }
+.wa-form label,
+.wa-form legend {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.wa-form input[type="text"],
+.wa-form input[type="tel"],
+.wa-form select,
+.wa-form textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 15px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  margin: 1px 0 6px;
+  min-height: 36px;
+}
+.wa-form textarea { min-height: 52px; resize: vertical; }
+#wa-phone {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  letter-spacing: .03em;
+}
+.wa-form input:focus,
+.wa-form select:focus,
+.wa-form textarea:focus { outline: 2px solid var(--teal); border-color: transparent; }
+.wa-gender {
+  border: 0;
+  margin: 0 0 6px;
+  padding: 0;
+}
+.wa-gender div { display: flex; gap: 18px; margin-top: 4px; }
+.wa-gender label { font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+.wa-gender input { width: 16px; height: 16px; margin: 0; }
+.wa-count {
+  justify-self: end;
+  margin: -6px 0 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.wa-form .btn { margin-top: 2px; }
+.wa-form .review-status { margin-top: 8px; }
+.wa-form .review-status:empty { display: none; }
+.wa-lead .review-done { display: grid; justify-items: center; gap: 8px; }
+.wa-lead .review-done .btn { min-width: 168px; }
+.wa-lead .review-done[hidden],
+.wa-lead [data-wa-form][hidden] { display: none; }
 .comments { padding: 0; margin: 34px 0 24px; }
 .comments h2 { font-size: 1.25rem; }
 .comments-hint { font-size: 14px; color: var(--muted); }

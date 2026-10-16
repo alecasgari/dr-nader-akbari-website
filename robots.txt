@@ -3,5 +3,6 @@ Allow: /
 Disallow: /proposal/
 Disallow: /_build/
 Disallow: /_content/
+Disallow: /Guide/
 
 Sitemap: https://drnaderakbari.com/sitemap.xml

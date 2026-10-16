@@ -125,7 +125,7 @@ GTM_NOSCRIPT = ('  <noscript><iframe src="https://www.googletagmanager.com/ns.ht
                 'height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>\n')
 
 # Hand-written pages filled in from the shared templates; None = analytics only, no header/footer.
-STATIC_CHROME = {"index.html": "/", "دستورالعمل/index.html": "/دستورالعمل/", "404.html": None}
+STATIC_CHROME = {"index.html": "/", "404.html": None}
 
 
 def page_category(p):

@@ -1070,7 +1070,11 @@ def build():
                 print(f"  removed {rel}")
             d = f.parent
             while d != ROOT and d.exists() and not any(d.iterdir()):
-                d.rmdir()
+                try:
+                    d.rmdir()
+                except OSError as err:
+                    print(f"  warning: could not remove empty directory {d.name}: {err}")
+                    break
                 d = d.parent
 
     for rel, text in outputs.items():

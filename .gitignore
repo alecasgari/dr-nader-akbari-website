@@ -1,7 +1,9 @@
 .DS_Store
 Thumbs.db
 Desktop.ini
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 *.log
 search-console-19092026/
 proposal-pdf/

@@ -50,26 +50,26 @@
   }
 
   function render() {
-    list.replaceChildren(
-      ...load().map((c) => {
-        const item = document.createElement("article");
-        item.className = "comment";
-        const head = document.createElement("div");
-        head.className = "comment-head";
-        const name = document.createElement("strong");
-        name.textContent = c.name;
-        const date = document.createElement("time");
-        date.textContent = new Date(c.at).toLocaleDateString("fa-IR");
-        const badge = document.createElement("span");
-        badge.className = "badge";
-        badge.textContent = "در انتظار تأیید";
-        head.append(name, date, badge);
-        const text = document.createElement("p");
-        text.textContent = c.comment;
-        item.append(head, text);
-        return item;
-      })
-    );
+    list.querySelectorAll("[data-pending]").forEach((node) => node.remove());
+    for (const c of load()) {
+      const item = document.createElement("article");
+      item.className = "comment";
+      item.dataset.pending = "";
+      const head = document.createElement("div");
+      head.className = "comment-head";
+      const name = document.createElement("strong");
+      name.textContent = c.name;
+      const date = document.createElement("time");
+      date.textContent = new Date(c.at).toLocaleDateString("fa-IR");
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = "در انتظار تأیید";
+      head.append(name, date, badge);
+      const text = document.createElement("p");
+      text.textContent = c.comment;
+      item.append(head, text);
+      list.append(item);
+    }
   }
 
   render();

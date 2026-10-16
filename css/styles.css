@@ -1564,6 +1564,9 @@ body.pub-modal-open { overflow: hidden; }
 .comment-head time { color: var(--muted); font-size: 12.5px; }
 .comment .badge { background: var(--danger-soft); color: var(--danger); border: 1px solid #f1c9a5; border-radius: 99px; padding: 1px 10px; font-size: 12px; font-weight: 700; }
 .comment p { margin: 0; color: var(--ink-soft); white-space: pre-line; }
+.comment-reply { margin-top: 10px; padding: 10px 12px; background: var(--teal-soft); border-radius: var(--radius-sm); }
+.comment-reply strong { display: block; margin-bottom: 4px; font-size: 13px; color: var(--teal-dark); }
+.comment-reply p { margin: 0; }
 .comment-form {
   display: grid;
   gap: 6px;

@@ -40,6 +40,7 @@ SCHOLAR_URL = "https://scholar.google.com/citations?user=13wD0fwAAAAJ&hl=en"
 DEFAULT_IMAGE = SITE + "/images/hero.webp"
 VIDEO_DIR = "ویدیو"
 VIDEOS_DATA = CONTENT / "videos.yaml"
+COMMENTS_DATA = CONTENT / "approved-comments.json"
 VIDEO_OG = "/images/videos/og.jpg"
 VIDEO_SHARE = (
     '            <div class="vg-share" data-vg-share>\n'
@@ -114,6 +115,39 @@ def fill(tpl, **kw):
 
 def tpl(name):
     return (TEMPLATES / name).read_text(encoding="utf-8")
+
+
+def approved_comment_html(slug):
+    if not COMMENTS_DATA.exists():
+        return ""
+    rows = json.loads(COMMENTS_DATA.read_text(encoding="utf-8"))
+    bits = []
+    for row in rows:
+        if row.get("slug") != slug:
+            continue
+        when = as_date(row.get("date"))
+        label = jalali(when) if when else ""
+        iso = when.isoformat() if when else ""
+        reply = row.get("reply") or ""
+        reply_html = ""
+        if reply:
+            reply_html = (
+                '              <div class="comment-reply">\n'
+                '                <strong>پاسخ مدیر سایت</strong>\n'
+                f'                <p>{esc(reply)}</p>\n'
+                '              </div>\n'
+            )
+        bits.append(
+            '            <article class="comment">\n'
+            '              <div class="comment-head">\n'
+            f'                <strong>{esc(row.get("name"))}</strong>\n'
+            f'                <time datetime="{esc(iso)}">{esc(label)}</time>\n'
+            '              </div>\n'
+            f'              <p>{esc(row.get("text"))}</p>\n'
+            f'{reply_html}'
+            '            </article>'
+        )
+    return "\n".join(bits)
 
 
 WA_PATH = ("M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"
@@ -770,7 +804,8 @@ def render_page(p, pages, draft, hub_live):
         review_panel = fill(tpl("review-panel.html"), endpoint=ENDPOINT,
                             slug=esc(p.slug), title=esc(p.title))
     comments = fill(tpl("comments.html"), endpoint=ENDPOINT, slug=esc(p.slug),
-                    title=esc(p.title), preview="1" if draft else "0")
+                    title=esc(p.title), preview="1" if draft else "0",
+                    items="" if draft else approved_comment_html(p.slug))
 
     hero_image = ""
     if g("image"):

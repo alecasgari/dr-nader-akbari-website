@@ -930,7 +930,7 @@ def redirect_page(target):
 
 def render_hub(pages):
     live = [p for p in pages if p.live]
-    live.sort(key=lambda p: (0 if p.type == "pillar" else 1, -(p.updated or p.published or dt.date.min).toordinal()))
+    live.sort(key=lambda p: (p.updated or p.published or dt.date.min, p.slug), reverse=True)
     cats = sorted({page_category(p) for p in live})
     filters = ('          <button type="button" class="blog-filter is-active" data-filter="all">همه</button>\n' +
                "\n".join(f'          <button type="button" class="blog-filter" data-filter="{esc(c)}">{esc(c)}</button>'

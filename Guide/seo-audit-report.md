@@ -54,5 +54,7 @@
 8. https://drnaderakbari.com/عمل-سینوس-با-لیزر/
 9. https://drnaderakbari.com/دستورالعمل/
 10. https://drnaderakbari.com/ویدیو/
+11. https://drnaderakbari.com/برگشت-پولیپ-بعد-از-عمل/
+12. https://drnaderakbari.com/خونریزی-بعد-از-عمل-سینوس/
 
 سپس **Sitemaps** → تأیید `https://drnaderakbari.com/sitemap.xml` (در صورت نیاز «ارسال مجدد»).

@@ -131,9 +131,10 @@ def approved_comment_html(slug):
         reply = row.get("reply") or ""
         reply_html = ""
         if reply:
+            who = row.get("reply_by") or "پاسخ مدیر سایت"
             reply_html = (
                 '              <div class="comment-reply">\n'
-                '                <strong>پاسخ مدیر سایت</strong>\n'
+                f'                <strong>{esc(who)}</strong>\n'
                 f'                <p>{esc(reply)}</p>\n'
                 '              </div>\n'
             )
